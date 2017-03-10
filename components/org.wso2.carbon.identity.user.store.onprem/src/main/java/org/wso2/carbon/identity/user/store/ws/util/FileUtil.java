@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.carbon.identity.user.store.outbound.util;
+package org.wso2.carbon.identity.user.store.ws.util;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;

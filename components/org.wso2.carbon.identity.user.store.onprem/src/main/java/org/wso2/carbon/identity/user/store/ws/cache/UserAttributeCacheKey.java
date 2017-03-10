@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.carbon.identity.user.store.outbound.cache;
+package org.wso2.carbon.identity.user.store.ws.cache;
 
 import org.wso2.carbon.identity.application.common.cache.CacheKey;
 

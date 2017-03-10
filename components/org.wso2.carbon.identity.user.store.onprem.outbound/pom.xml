@@ -114,6 +114,12 @@
             <version>5.10.0</version>
             <!--TODO-->
         </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.transport</groupId>
+            <artifactId>org.wso2.carbon.transport.jms</artifactId>
+            <version>4.2.6</version>
+            <!--TODO-->
+        </dependency>
     </dependencies>
 
     <build>
@@ -131,7 +137,7 @@
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
                         <Bundle-Name>${project.artifactId}</Bundle-Name>
                         <Private-Package>
-                            org.wso2.carbon.identity.user.store.outbound.internal,
+                            org.wso2.carbon.identity.user.store.ws.internal,
                         </Private-Package>
                         <Import-Package>
                             org.wso2.carbon.identity.application.common.*;version="${carbon.identity.framework.imp.pkg.version.range}",
@@ -140,7 +146,7 @@
 
 
                         <Export-Package>
-                            !org.wso2.carbon.identity.user.store.outbound.internal,
+                            !org.wso2.carbon.identity.user.store.ws.internal,
                             org.wso2.carbon.identity.user.store.outbound.*;
                             version="${project.version}",
                         </Export-Package>

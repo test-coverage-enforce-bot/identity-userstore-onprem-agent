@@ -202,10 +202,9 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
             try {
                 connectionFactory.closeConnection(connection);
             } catch (JMSConnectionException e) {
-                e.printStackTrace();
+                LOGGER.error("Error occurred while closing the connection");
             }
         }
-
         return true;
     }
 

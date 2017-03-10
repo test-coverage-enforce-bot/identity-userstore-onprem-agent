@@ -15,7 +15,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.wso2.carbon.identity.user.store.outbound.util;
+package org.wso2.carbon.identity.user.store.ws.util;
 
 public class EndpointUtil {
 

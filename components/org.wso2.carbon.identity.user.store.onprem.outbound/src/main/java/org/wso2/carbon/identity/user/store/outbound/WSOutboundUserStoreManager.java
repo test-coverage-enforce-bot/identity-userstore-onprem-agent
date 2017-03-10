@@ -19,10 +19,16 @@ package org.wso2.carbon.identity.user.store.outbound;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
+import org.wso2.carbon.identity.user.store.outbound.cache.UserAttributeCache;
+import org.wso2.carbon.identity.user.store.outbound.cache.UserAttributeCacheEntry;
+import org.wso2.carbon.identity.user.store.outbound.cache.UserAttributeCacheKey;
 import org.wso2.carbon.identity.user.store.outbound.messaging.JMSConnectionException;
 import org.wso2.carbon.identity.user.store.outbound.messaging.JMSConnectionFactory;
 import org.wso2.carbon.identity.user.store.outbound.model.UserOperation;
+import org.wso2.carbon.user.api.ClaimMapping;
 import org.wso2.carbon.user.api.Properties;
 import org.wso2.carbon.user.api.Property;
 import org.wso2.carbon.user.api.RealmConfiguration;
@@ -48,6 +54,7 @@ import javax.jms.ObjectMessage;
 import javax.jms.Session;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 
@@ -191,7 +198,7 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
 
             String filter = String.format("JMSCorrelationID='%s'", correlationId);
             MessageConsumer consumer = responseSession.createConsumer(responseQueue, filter);
-            Message rm = consumer.receive(6000);
+            Message rm = consumer.receive(6000); //TODO define this timeout
             UserOperation response = (UserOperation) ((ObjectMessage) rm).getObject();
             return OperationsConstants.UM_OPERATION_AUTHENTICATE_RESULT_SUCCESS.equals(response.getResponseData());
         } catch (JMSConnectionException e) {
@@ -205,7 +212,7 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
                 LOGGER.error("Error occurred while closing the connection");
             }
         }
-        return true;
+        return false;
     }
 
     private void addNextOperation(String correlationId, String operationType, String requestData,
@@ -296,11 +303,104 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
 
     }
 
+    private String getUserPropertyValuesRequestData(String username, String attributes) {
+        return String.format("{username : '%s', attributes : '%s'}", username, attributes);
+    }
+
+    private String getAllClaimMapAttributes(ClaimMapping[] claimMappings) {
+
+        StringBuilder queryBuilder = new StringBuilder();
+
+        for (ClaimMapping mapping : claimMappings) {
+            queryBuilder.append(",").append(mapping.getMappedAttribute());
+        }
+        return queryBuilder.toString().replaceFirst(",", "");
+    }
+
     public Map<String, String> getUserPropertyValues(String userName, String[] propertyNames, String profileName)
             throws UserStoreException {
 
+        UserAttributeCacheEntry cacheEntry = getUserAttributesFromCache(userName);
+        Map<String, String> allUserAttributes = new HashMap<>();
         Map<String, String> mapAttributes = new HashMap<>();
-        return mapAttributes; //TODO implement this
+        if (cacheEntry == null) {
+
+            JMSConnectionFactory connectionFactory = new JMSConnectionFactory();
+            Connection connection = null;
+            Session requestSession;
+            Session responseSession;
+            Destination requestQueue;
+            Destination responseQueue;
+            MessageProducer producer;
+            try {
+                connectionFactory.createActiveMQConnectionFactory();
+                connection = connectionFactory.createConnection();
+                connectionFactory.start(connection);
+                requestSession = connectionFactory.createSession(connection);
+                requestQueue = connectionFactory.createQueueDestination(requestSession, QUEUE_NAME_REQUEST);
+                producer = connectionFactory
+                        .createMessageProducer(requestSession, requestQueue, DeliveryMode.NON_PERSISTENT);
+
+                String correlationId = UUID.randomUUID().toString();
+                responseQueue = connectionFactory.createQueueDestination(requestSession, QUEUE_NAME_RESPONSE);
+
+                addNextOperation(correlationId, OperationsConstants.UM_OPERATION_TYPE_GET_CLAIMS,
+                        getUserPropertyValuesRequestData(userName, getAllClaimMapAttributes(
+                                claimManager.getAllClaimMappings())),
+                        requestSession, producer, responseQueue);
+
+                responseSession = connectionFactory.createSession(connection);
+
+                String filter = String.format("JMSCorrelationID='%s'", correlationId);
+                MessageConsumer consumer = responseSession.createConsumer(responseQueue, filter);
+                Message rm = consumer.receive(6000); //TODO define timeout value
+                UserOperation response = (UserOperation) ((ObjectMessage) rm).getObject();
+
+                JSONObject resultObj = new JSONObject(response.getResponseData());
+                Iterator iterator = resultObj.keys();
+                while (iterator.hasNext()) {
+                    String key = (String) iterator.next();
+                    allUserAttributes.put(key, (String) resultObj.get(key));
+                }
+                addAttributesToCache(userName, allUserAttributes);
+
+            } catch (JMSConnectionException e) {
+                LOGGER.error("Error occurred while adding message to queue", e);
+            } catch (JMSException e) {
+                LOGGER.error("Error occurred while adding message to queue", e);
+            } catch (org.wso2.carbon.user.api.UserStoreException e) {
+                LOGGER.error("Error occurred while getting claim mappings", e);
+            } catch (JSONException e) {
+                LOGGER.error("Error occurred while reading JSON object", e);
+            } finally {
+                try {
+                    connectionFactory.closeConnection(connection);
+                } catch (JMSConnectionException e) {
+                    LOGGER.error("Error occurred while closing the connection");
+                }
+            }
+
+        } else {
+            allUserAttributes = cacheEntry.getUserAttributes();
+        }
+        for (String propertyName : propertyNames) {
+            mapAttributes.put(propertyName, allUserAttributes.get(propertyName));
+        }
+        return mapAttributes;
+    }
+
+    private void addAttributesToCache(String userName, Map<String, String> attributes) {
+
+        UserAttributeCacheKey cacheKey = new UserAttributeCacheKey(userName);
+        UserAttributeCacheEntry cacheEntry = new UserAttributeCacheEntry();
+        cacheEntry.setUserAttributes(attributes);
+        UserAttributeCache.getInstance().addToCache(cacheKey, cacheEntry);
+    }
+
+    private UserAttributeCacheEntry getUserAttributesFromCache(String userName) {
+
+        UserAttributeCacheKey cacheKey = new UserAttributeCacheKey(userName);
+        return UserAttributeCache.getInstance().getValueFromCache(cacheKey);
     }
 
     //Todo: Implement doCheckExistingRole

@@ -24,6 +24,7 @@ public class OperationsConstants {
     public final static String UM_OPERATION_STATUS_COMPLETED = "C";
 
     public final static String UM_OPERATION_TYPE_AUTHENTICATE = "authenticate";
+    public final static String UM_OPERATION_TYPE_GET_CLAIMS = "getclaims";
 
     public final static String UM_OPERATION_AUTHENTICATE_RESULT_SUCCESS = "SUCCESS";
     public final static String UM_OPERATION_AUTHENTICATE_RESULT_FAIL = "FAIL";

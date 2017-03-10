@@ -311,6 +311,7 @@
 
     <modules>
         <module>components/org.wso2.carbon.identity.user.store.onprem</module>
+        <module>components/org.wso2.carbon.identity.user.store.onprem.outbound</module>
     </modules>
 
 </project>

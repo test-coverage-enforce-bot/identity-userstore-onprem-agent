@@ -19,6 +19,7 @@ package org.wso2.carbon.identity.user.store.outbound;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
@@ -52,9 +53,11 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.ObjectMessage;
 import javax.jms.Session;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -307,6 +310,10 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
         return String.format("{username : '%s', attributes : '%s'}", username, attributes);
     }
 
+    private String doGetExternalRoleListOfUserRequestData(String username) {
+        return String.format("{username : '%s'}", username);
+    }
+
     private String getAllClaimMapAttributes(ClaimMapping[] claimMappings) {
 
         StringBuilder queryBuilder = new StringBuilder();
@@ -553,7 +560,60 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
 
     public String[] doGetExternalRoleListOfUser(String userName, String filter) throws UserStoreException {
 
-        return new String[] { "" }; //TODO implement this
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Processing getRoleListOfUser request for tenantId  - [" + this.tenantId + "]");
+        }
+
+        JMSConnectionFactory connectionFactory = new JMSConnectionFactory();
+        Connection connection = null;
+        Session requestSession;
+        Session responseSession;
+        Destination requestQueue;
+        Destination responseQueue;
+        MessageProducer producer;
+        List<String> groupList = new ArrayList<>();
+        try {
+            connectionFactory.createActiveMQConnectionFactory();
+            connection = connectionFactory.createConnection();
+            connectionFactory.start(connection);
+            requestSession = connectionFactory.createSession(connection);
+            requestQueue = connectionFactory.createQueueDestination(requestSession, QUEUE_NAME_REQUEST);
+            producer = connectionFactory
+                    .createMessageProducer(requestSession, requestQueue, DeliveryMode.NON_PERSISTENT);
+
+            String correlationId = UUID.randomUUID().toString();
+            responseQueue = connectionFactory.createQueueDestination(requestSession, QUEUE_NAME_RESPONSE);
+
+            addNextOperation(correlationId, OperationsConstants.UM_OPERATION_TYPE_GET_ROLES,
+                    doGetExternalRoleListOfUserRequestData(userName), requestSession, producer, responseQueue);
+
+            responseSession = connectionFactory.createSession(connection);
+
+            String selector = String.format("JMSCorrelationID='%s'", correlationId);
+            MessageConsumer consumer = responseSession.createConsumer(responseQueue, selector);
+            Message rm = consumer.receive(6000); //TODO define timeout value
+            UserOperation response = (UserOperation) ((ObjectMessage) rm).getObject();
+
+            JSONObject resultObj = new JSONObject(response.getResponseData());
+            JSONArray users = resultObj.getJSONArray("groups");
+            for (int i = 0; i < users.length(); i++) {
+                groupList.add((String) users.get(i));
+            }
+
+        } catch (JMSConnectionException e) {
+            LOGGER.error("Error occurred while adding message to queue", e);
+        } catch (JMSException e) {
+            LOGGER.error("Error occurred while adding message to queue", e);
+        } catch (JSONException e) {
+            LOGGER.error("Error occurred while reading JSON object", e);
+        } finally {
+            try {
+                connectionFactory.closeConnection(connection);
+            } catch (JMSConnectionException e) {
+                LOGGER.error("Error occurred while closing the connection");
+            }
+        }
+        return groupList.toArray(new String[groupList.size()]);
     }
 
     @Override

@@ -77,7 +77,6 @@ public class WSUserStoreManager extends AbstractUserStoreManager {
 
     private HttpClient httpClient;
     private static Map<Integer, Key> privateKeys = new ConcurrentHashMap<>();
-    private MultiThreadedHttpConnectionManager httpConnectionManager;
 
     public WSUserStoreManager() {
 
@@ -236,11 +235,8 @@ public class WSUserStoreManager extends AbstractUserStoreManager {
     }
 
     private HttpClient getHttpClient() {
-        if (httpConnectionManager == null) {
-            httpConnectionManager = new MultiThreadedHttpConnectionManager();
-        }
         if (httpClient == null) {
-            httpClient = new HttpClient(httpConnectionManager);
+            httpClient = new HttpClient(new MultiThreadedHttpConnectionManager());
         }
         return httpClient;
     }

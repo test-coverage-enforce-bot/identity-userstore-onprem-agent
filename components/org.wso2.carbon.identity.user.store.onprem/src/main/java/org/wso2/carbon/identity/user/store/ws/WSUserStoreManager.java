@@ -20,6 +20,7 @@ package org.wso2.carbon.identity.user.store.ws;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -60,7 +61,13 @@ import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.Key;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class WSUserStoreManager extends AbstractUserStoreManager {
@@ -70,6 +77,7 @@ public class WSUserStoreManager extends AbstractUserStoreManager {
 
     private HttpClient httpClient;
     private static Map<Integer, Key> privateKeys = new ConcurrentHashMap<>();
+    private MultiThreadedHttpConnectionManager httpConnectionManager;
 
     public WSUserStoreManager() {
 
@@ -227,6 +235,16 @@ public class WSUserStoreManager extends AbstractUserStoreManager {
                 "UTF-8");
     }
 
+    private HttpClient getHttpClient() {
+        if (httpConnectionManager == null) {
+            httpConnectionManager = new MultiThreadedHttpConnectionManager();
+        }
+        if (httpClient == null) {
+            httpClient = new HttpClient(httpConnectionManager);
+        }
+        return httpClient;
+    }
+
     public boolean doAuthenticate(String username, Object credential) throws UserStoreException {
         if (log.isDebugEnabled()) {
             log.debug("Processing authentication request for tenantId  - [" + this.tenantId + "]");
@@ -235,9 +253,7 @@ public class WSUserStoreManager extends AbstractUserStoreManager {
         PostMethod postRequest = new PostMethod(EndpointUtil.getAuthenticateEndpoint(getHostName()));
         try {
 
-            if (this.httpClient == null) {
-                this.httpClient = new HttpClient();
-            }
+            this.httpClient = getHttpClient();
             setAuthorizationHeader(postRequest);
             postRequest.setRequestEntity(getAuthenticateEntity(username, credential));
             int response = httpClient.executeMethod(postRequest);
@@ -250,6 +266,8 @@ public class WSUserStoreManager extends AbstractUserStoreManager {
         } catch (IOException | WSUserStoreException | JSONException e) {
             log.error("Error occurred while calling backed to authenticate request for tenantId - [" + this.tenantId
                     + "]", e);
+        } finally {
+            postRequest.releaseConnection();
         }
         return authStatus;
     }
@@ -359,9 +377,7 @@ public class WSUserStoreManager extends AbstractUserStoreManager {
         if (cacheEntry == null) {
             GetMethod getMethod = new GetMethod(EndpointUtil.getUserClaimRetrievalEndpoint(getHostName(), userName));
             try {
-                if (this.httpClient == null) {
-                    this.httpClient = new HttpClient();
-                }
+                this.httpClient = getHttpClient();
 
                 ClaimManager claimManager = WSUserStoreComponentHolder.getInstance().getRealmService()
                         .getBootstrapRealm().getClaimManager();
@@ -387,6 +403,8 @@ public class WSUserStoreManager extends AbstractUserStoreManager {
                 log.error("Error occurred while calling backed to authenticate request for tenantId - [" + this.tenantId
                         + "]", e);
                 return Collections.EMPTY_MAP;
+            } finally {
+                getMethod.releaseConnection();
             }
         } else {
             allUserAttributes = cacheEntry.getUserAttributes();
@@ -513,9 +531,7 @@ public class WSUserStoreManager extends AbstractUserStoreManager {
         List<String> userList = new ArrayList<>();
         try {
 
-            if (this.httpClient == null) {
-                this.httpClient = new HttpClient();
-            }
+            this.httpClient = getHttpClient();
 
             getMethod.setQueryString(getQueryString("limit", new String[]{String.valueOf(maxItemLimit)}));
             setAuthorizationHeader(getMethod);
@@ -537,6 +553,8 @@ public class WSUserStoreManager extends AbstractUserStoreManager {
         } catch (IOException | JSONException | WSUserStoreException e) {
             log.error("Error occurred while calling backed to authenticate request for tenantId - [" + this.tenantId
                     + "]", e);
+        } finally {
+            getMethod.releaseConnection();
         }
         return userList.toArray(new String[userList.size()]);
     }
@@ -573,9 +591,7 @@ public class WSUserStoreManager extends AbstractUserStoreManager {
         List<String> groupList = new ArrayList<>();
         try {
 
-            if (this.httpClient == null) {
-                this.httpClient = new HttpClient();
-            }
+            this.httpClient = getHttpClient();
 
             setAuthorizationHeader(getMethod);
             int response = httpClient.executeMethod(getMethod);
@@ -590,6 +606,8 @@ public class WSUserStoreManager extends AbstractUserStoreManager {
         } catch (IOException | JSONException | WSUserStoreException e) {
             log.error("Error occurred while getting user groups for tenantId - [" + this.tenantId
                     + "]", e);
+        } finally {
+            getMethod.releaseConnection();
         }
         return groupList.toArray(new String[groupList.size()]);
     }
@@ -624,9 +642,7 @@ public class WSUserStoreManager extends AbstractUserStoreManager {
         GetMethod getMethod = new GetMethod(EndpointUtil.getRoleListEndpoint(getHostName()));
         List<String> roleList = new ArrayList<>();
         try {
-            if (this.httpClient == null) {
-                this.httpClient = new HttpClient();
-            }
+            this.httpClient = getHttpClient();
 
             setAuthorizationHeader(getMethod);
             int response = httpClient.executeMethod(getMethod);
@@ -645,6 +661,8 @@ public class WSUserStoreManager extends AbstractUserStoreManager {
         } catch (IOException | JSONException | WSUserStoreException e) {
             log.error("Error occurred while get role names for tenantId - [" + this.tenantId
                     + "]", e);
+        } finally {
+            getMethod.releaseConnection();
         }
         return roleList.toArray(new String[roleList.size()]);
     }

@@ -75,7 +75,6 @@ public class WSUserStoreManager extends AbstractUserStoreManager {
     private static Log log = LogFactory.getLog(WSUserStoreManager.class);
     private static final String ENDPOINT = "EndPointURL";
 
-    private HttpClient httpClient;
     private static Map<Integer, Key> privateKeys = new ConcurrentHashMap<>();
 
     public WSUserStoreManager() {
@@ -140,11 +139,6 @@ public class WSUserStoreManager extends AbstractUserStoreManager {
         this.realmConfig = realmConfig;
         this.tenantId = tenantId;
         this.userRealm = realm;
-        this.httpClient = new HttpClient();
-
-        if (log.isDebugEnabled()) {
-            log.debug("Started " + System.currentTimeMillis());
-        }
         this.claimManager = claimManager;
         this.userRealm = realm;
 
@@ -167,10 +161,6 @@ public class WSUserStoreManager extends AbstractUserStoreManager {
         }
 
         initUserRolesCache();
-
-        if (log.isDebugEnabled()) {
-            log.debug("Ended " + System.currentTimeMillis());
-        }
     }
 
     private void addAttributesToCache(String userName, Map<String, String> attributes) {
@@ -235,9 +225,8 @@ public class WSUserStoreManager extends AbstractUserStoreManager {
     }
 
     private HttpClient getHttpClient() {
-        if (httpClient == null) {
-            httpClient = new HttpClient(new MultiThreadedHttpConnectionManager());
-        }
+        HttpClient httpClient = new HttpClient(new MultiThreadedHttpConnectionManager());
+        httpClient.getParams().setParameter("http.connection.stalecheck", new Boolean(true));
         return httpClient;
     }
 
@@ -249,7 +238,7 @@ public class WSUserStoreManager extends AbstractUserStoreManager {
         PostMethod postRequest = new PostMethod(EndpointUtil.getAuthenticateEndpoint(getHostName()));
         try {
 
-            this.httpClient = getHttpClient();
+            HttpClient httpClient = getHttpClient();
             setAuthorizationHeader(postRequest);
             postRequest.setRequestEntity(getAuthenticateEntity(username, credential));
             int response = httpClient.executeMethod(postRequest);
@@ -373,7 +362,7 @@ public class WSUserStoreManager extends AbstractUserStoreManager {
         if (cacheEntry == null) {
             GetMethod getMethod = new GetMethod(EndpointUtil.getUserClaimRetrievalEndpoint(getHostName(), userName));
             try {
-                this.httpClient = getHttpClient();
+                HttpClient httpClient = getHttpClient();
 
                 ClaimManager claimManager = WSUserStoreComponentHolder.getInstance().getRealmService()
                         .getBootstrapRealm().getClaimManager();
@@ -527,7 +516,7 @@ public class WSUserStoreManager extends AbstractUserStoreManager {
         List<String> userList = new ArrayList<>();
         try {
 
-            this.httpClient = getHttpClient();
+            HttpClient httpClient = getHttpClient();
 
             getMethod.setQueryString(getQueryString("limit", new String[]{String.valueOf(maxItemLimit)}));
             setAuthorizationHeader(getMethod);
@@ -587,7 +576,7 @@ public class WSUserStoreManager extends AbstractUserStoreManager {
         List<String> groupList = new ArrayList<>();
         try {
 
-            this.httpClient = getHttpClient();
+            HttpClient httpClient = getHttpClient();
 
             setAuthorizationHeader(getMethod);
             int response = httpClient.executeMethod(getMethod);
@@ -638,7 +627,7 @@ public class WSUserStoreManager extends AbstractUserStoreManager {
         GetMethod getMethod = new GetMethod(EndpointUtil.getRoleListEndpoint(getHostName()));
         List<String> roleList = new ArrayList<>();
         try {
-            this.httpClient = getHttpClient();
+            HttpClient httpClient = getHttpClient();
 
             setAuthorizationHeader(getMethod);
             int response = httpClient.executeMethod(getMethod);

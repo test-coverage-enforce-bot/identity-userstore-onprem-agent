@@ -539,7 +539,7 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
 
     public String[] doListUsers(String filter, int maxItemLimit) throws UserStoreException {
 
-        return new String[] { "" };//TODO implement this
+        return new String[] { "" };//This method is currently not supported and have to implement it
     }
 
     @Override
@@ -601,9 +601,9 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
             UserOperation response = (UserOperation) ((ObjectMessage) rm).getObject();
 
             JSONObject resultObj = new JSONObject(response.getResponseData());
-            JSONArray users = resultObj.getJSONArray("groups");
-            for (int i = 0; i < users.length(); i++) {
-                groupList.add((String) users.get(i));
+            JSONArray groups = resultObj.getJSONArray("groups");
+            for (int i = 0; i < groups.length(); i++) {
+                groupList.add((String) groups.get(i));
             }
 
         } catch (JMSConnectionException e) {

@@ -48,7 +48,7 @@ public class JMSConnectionFactory {
         if (null == connectionFactory) {
             throw new JMSConnectionException(
                     "Connection cannot be establish to the broker. Connection Factory is null. Please "
-                            + "check the Please check the broker libs provided.");
+                            + "check the Please check the broker libs provided");
         }
         Connection connection = null;
         try {
@@ -61,7 +61,7 @@ public class JMSConnectionFactory {
                 try {
                     connection.close();
                 } catch (Exception ex) {
-                    LOGGER.error("Error while closing the connection. ", ex);
+                    LOGGER.error("Error while closing the connection", ex);
                 }
             }
             throw new JMSConnectionException("Error occurred while creating queue connection", e);
@@ -95,7 +95,7 @@ public class JMSConnectionFactory {
         try {
             return session.createConsumer(destination);
         } catch (Exception e) {
-            throw new JMSConnectionException("JMS Exception while creating consumer for the destination ", e);
+            throw new JMSConnectionException("JMS Exception while creating consumer for the destination", e);
         }
     }
 
@@ -161,8 +161,7 @@ public class JMSConnectionFactory {
         try {
             return connection.createSession(transactedSession, Session.AUTO_ACKNOWLEDGE);
         } catch (JMSException e) {
-            throw new JMSConnectionException(
-                    "JMS Exception while obtaining session for factory", e);
+            throw new JMSConnectionException("JMS Exception while obtaining session for factory", e);
         }
     }
 
@@ -178,7 +177,7 @@ public class JMSConnectionFactory {
                 connection.close();
             }
         } catch (JMSException e) {
-            throw new JMSConnectionException("JMS Exception while closing the connection. ", e);
+            throw new JMSConnectionException("JMS Exception while closing the connection", e);
         }
     }
 
@@ -194,7 +193,7 @@ public class JMSConnectionFactory {
                 session.close();
             }
         } catch (JMSException e) {
-            throw new JMSConnectionException("JMS Exception while closing the session. ", e);
+            throw new JMSConnectionException("JMS Exception while closing the session", e);
         }
     }
 
@@ -210,7 +209,7 @@ public class JMSConnectionFactory {
                 messageConsumer.close();
             }
         } catch (JMSException e) {
-            throw new JMSConnectionException("JMS Exception while closing the subscriber. ", e);
+            throw new JMSConnectionException("JMS Exception while closing the subscriber", e);
         }
     }
 
@@ -226,7 +225,7 @@ public class JMSConnectionFactory {
                 messageProducer.close();
             }
         } catch (JMSException e) {
-            throw new JMSConnectionException("JMS Exception while closing the producer. ", e);
+            throw new JMSConnectionException("JMS Exception while closing the producer", e);
         }
     }
 

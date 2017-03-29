@@ -35,11 +35,11 @@ public class JMSConnectionFactory {
     private ActiveMQConnectionFactory connectionFactory;
     private boolean transactedSession = false;
 
-    public ActiveMQConnectionFactory createActiveMQConnectionFactory() {
+    public ActiveMQConnectionFactory createActiveMQConnectionFactory(String messageBrokerURL) {
         if (null != this.connectionFactory) {
             return this.connectionFactory;
         }
-        this.connectionFactory = new ActiveMQConnectionFactory("tcp://localhost:61616");
+        this.connectionFactory = new ActiveMQConnectionFactory(messageBrokerURL);
 
         return this.connectionFactory;
     }

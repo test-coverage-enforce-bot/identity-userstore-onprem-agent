@@ -26,7 +26,7 @@ import org.wso2.carbon.user.api.UserStoreManager;
 import org.wso2.carbon.user.core.service.RealmService;
 
 /**
- * @scr.component name="onprem.outbound.ws.user.store.component" immediate=true
+ * @scr.component name="agent.outbound.ws.user.store.component" immediate=true
  * @scr.reference name="user.realmservice.default"
  * interface="org.wso2.carbon.user.core.service.RealmService"
  * cardinality="1..1" policy="dynamic" bind="setRealmService"

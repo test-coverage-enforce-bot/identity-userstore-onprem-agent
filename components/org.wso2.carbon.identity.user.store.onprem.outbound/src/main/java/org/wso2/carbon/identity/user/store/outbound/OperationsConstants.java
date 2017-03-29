@@ -19,14 +19,12 @@ package org.wso2.carbon.identity.user.store.outbound;
 
 public class OperationsConstants {
 
-    public final static String UM_OPERATION_STATUS_NEW = "N";
-    public final static String UM_OPERATION_STATUS_PROCESSING = "P";
-    public final static String UM_OPERATION_STATUS_COMPLETED = "C";
-
     public final static String UM_OPERATION_TYPE_AUTHENTICATE = "authenticate";
     public final static String UM_OPERATION_TYPE_GET_CLAIMS = "getclaims";
+    public final static String UM_OPERATION_TYPE_GET_USER_ROLES = "getuserroles";
     public final static String UM_OPERATION_TYPE_GET_ROLES = "getroles";
 
     public final static String UM_OPERATION_AUTHENTICATE_RESULT_SUCCESS = "SUCCESS";
-    public final static String UM_OPERATION_AUTHENTICATE_RESULT_FAIL = "FAIL";
+
+    public final static int UM_MESSAGE_CONSUMER_RECEIVE_TIMEOUT = 6000;
 }

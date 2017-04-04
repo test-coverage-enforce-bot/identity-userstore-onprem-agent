@@ -45,8 +45,20 @@ public class TokenMgtService extends AbstractAdmin {
         return false;
     }
 
-    public void updateAccessToken(String token) {
+    public boolean deleteAccessToken(String tenantDomain) {
 
+        TokenMgtDao tokenMgtDao = new TokenMgtDao();
+        try {
+            return tokenMgtDao.deleteAccessToken(tenantDomain);
+        } catch (WSUserStoreException e) {
+            LOGGER.error("Error occurred while inserting token", e);
+        }
+        return false;
+    }
+
+    public boolean updateAccessToken(String token) {
+
+        return true;
     }
 
     public boolean validateAccessToken(String token) {

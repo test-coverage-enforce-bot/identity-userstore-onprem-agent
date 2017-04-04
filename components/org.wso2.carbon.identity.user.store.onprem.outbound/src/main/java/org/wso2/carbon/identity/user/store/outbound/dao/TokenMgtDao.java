@@ -42,10 +42,28 @@ public class TokenMgtDao {
             insertTokenPrepStmt.setString(1, token.getAccessToken());
             insertTokenPrepStmt.setString(2, token.getStatus());
             insertTokenPrepStmt.setString(3, token.getTenant());
+            insertTokenPrepStmt.executeUpdate();
             connection.commit();
             return true;
         } catch (SQLException e) {
             throw new WSUserStoreException("Error occurred while persisting access token", e);
+        } finally {
+            IdentityDatabaseUtil.closeAllConnections(connection, null, insertTokenPrepStmt);
+        }
+    }
+
+    public boolean deleteAccessToken(String tenantDomain) throws WSUserStoreException {
+        Connection connection = DatabaseUtil.getInstance().getDBConnection();
+        PreparedStatement insertTokenPrepStmt = null;
+        try {
+            insertTokenPrepStmt = connection.prepareStatement(SQLQueries.ACCESS_TOKEN_DELETE);
+            insertTokenPrepStmt.setString(1, tenantDomain);
+            insertTokenPrepStmt.executeUpdate();
+            connection.commit();
+            return true;
+        } catch (SQLException e) {
+            throw new WSUserStoreException("Error occurred while deleting access tokens in tenant : " + tenantDomain,
+                    e);
         } finally {
             IdentityDatabaseUtil.closeAllConnections(connection, null, insertTokenPrepStmt);
         }

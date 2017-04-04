@@ -21,4 +21,5 @@ public class SQLQueries {
 
     public static final String ACCESS_TOKEN_INSERT = "INSERT INTO UM_ACCESS_TOKEN(UM_TOKEN,UM_STATUS,UM_TENANT) " +
             "VALUES(?,?,?)";
+    public static final String ACCESS_TOKEN_DELETE = "DELETE FROM UM_ACCESS_TOKEN WHERE UM_TENANT= ? ";
 }

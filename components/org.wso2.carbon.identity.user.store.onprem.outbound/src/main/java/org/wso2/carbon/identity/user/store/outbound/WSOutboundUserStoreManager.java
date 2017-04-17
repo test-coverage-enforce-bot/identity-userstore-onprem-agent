@@ -26,6 +26,8 @@ import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.user.store.outbound.cache.UserAttributeCache;
 import org.wso2.carbon.identity.user.store.outbound.cache.UserAttributeCacheEntry;
 import org.wso2.carbon.identity.user.store.outbound.cache.UserAttributeCacheKey;
+import org.wso2.carbon.identity.user.store.outbound.dao.TokenMgtDao;
+import org.wso2.carbon.identity.user.store.outbound.exception.WSUserStoreException;
 import org.wso2.carbon.identity.user.store.outbound.messaging.JMSConnectionException;
 import org.wso2.carbon.identity.user.store.outbound.messaging.JMSConnectionFactory;
 import org.wso2.carbon.identity.user.store.outbound.model.UserOperation;
@@ -211,6 +213,8 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
             LOGGER.error("Error occurred while adding message to queue", e);
         } catch (JMSException e) {
             LOGGER.error("Error occurred while adding message to queue", e);
+        } catch (WSUserStoreException e) {
+            LOGGER.error("Error occurred while adding message to queue", e);
         } finally {
             try {
                 connectionFactory.closeConnection(connection);
@@ -221,8 +225,14 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
         return false;
     }
 
+    private String getServerNode(String tenantDomain) throws WSUserStoreException {
+        TokenMgtDao tokenMgtDao = new TokenMgtDao();
+        return tokenMgtDao.getServerNode(tenantDomain);
+    }
+
     private void addNextOperation(String correlationId, String operationType, String requestData,
-            Session requestSession, MessageProducer producer, Destination responseQueue) throws JMSException {
+            Session requestSession, MessageProducer producer, Destination responseQueue)
+            throws JMSException, WSUserStoreException {
 
         String tenantDomain = IdentityTenantUtil.getTenantDomain(tenantId);
 
@@ -235,7 +245,7 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
         ObjectMessage requestMessage = requestSession.createObjectMessage();
         requestMessage.setObject(requestOperation);
         requestMessage.setJMSCorrelationID(correlationId);
-
+        requestMessage.setStringProperty("serverNode", getServerNode(tenantDomain));
         requestMessage.setJMSReplyTo(responseQueue);
         producer.send(requestMessage);
 
@@ -381,6 +391,8 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
             } catch (org.wso2.carbon.user.api.UserStoreException e) {
                 LOGGER.error("Error occurred while getting claim mappings", e);
             } catch (JSONException e) {
+                LOGGER.error("Error occurred while reading JSON object", e);
+            } catch (WSUserStoreException e) {
                 LOGGER.error("Error occurred while reading JSON object", e);
             } finally {
                 try {
@@ -612,6 +624,8 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
             LOGGER.error("Error occurred while adding message to queue", e);
         } catch (JSONException e) {
             LOGGER.error("Error occurred while reading JSON object", e);
+        } catch (WSUserStoreException e) {
+            LOGGER.error("Error occurred while reading JSON object", e);
         } finally {
             try {
                 connectionFactory.closeConnection(connection);
@@ -697,6 +711,8 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
         } catch (JMSException e) {
             LOGGER.error("Error occurred while adding message to queue", e);
         } catch (JSONException e) {
+            LOGGER.error("Error occurred while reading JSON object", e);
+        } catch (WSUserStoreException e) {
             LOGGER.error("Error occurred while reading JSON object", e);
         } finally {
             try {

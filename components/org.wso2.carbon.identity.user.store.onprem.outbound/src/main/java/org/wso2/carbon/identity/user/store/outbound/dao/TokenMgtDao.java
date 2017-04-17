@@ -26,6 +26,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TokenMgtDao {
 
@@ -70,24 +72,25 @@ public class TokenMgtDao {
         }
     }
 
-    public String getServerNode(String tenant) throws WSUserStoreException {
+    public List<String> getServerNodes(String tenant) throws WSUserStoreException {
         Connection connection = DatabaseUtil.getInstance().getDBConnection();
         PreparedStatement insertTokenPrepStmt = null;
         ResultSet resultSet = null;
+        List<String> serverNodes = new ArrayList<>();
         try {
             insertTokenPrepStmt = connection.prepareStatement(SQLQueries.NEXT_SERVER_NODE_GET);
             insertTokenPrepStmt.setString(1, "A");
             insertTokenPrepStmt.setString(2, tenant);
             resultSet = insertTokenPrepStmt.executeQuery();
-            if (resultSet.next()) {
-                return resultSet.getString("UM_SERVER_NODE");
+            while (resultSet.next()) {
+                serverNodes.add(resultSet.getString("UM_SERVER_NODE"));
             }
         } catch (SQLException e) {
             throw new WSUserStoreException("Error occurred while persisting access token", e);
         } finally {
             IdentityDatabaseUtil.closeAllConnections(connection, resultSet, insertTokenPrepStmt);
         }
-        throw new WSUserStoreException("No serve connection available");
+        return serverNodes;
     }
 
     //SELECT A.UM_SERVER_NODE FROM UM_AGENT_CONNECTIONS A,UM_ACCESS_TOKEN T WHERE A.UM_ACCESS_TOKEN = T.UM_TOKEN AND A.UM_STATUS='A' AND T.UM_TENANT='wso2.com' ORDER BY A.UM_LASTUPDATEDATE;

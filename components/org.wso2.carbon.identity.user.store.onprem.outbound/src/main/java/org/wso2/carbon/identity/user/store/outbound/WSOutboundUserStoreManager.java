@@ -234,8 +234,8 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
         } else {
             int size = serverNodes.size();
             Random random = new Random();
-            int randint = Math.abs(random.nextInt()) % size;
-            return serverNodes.get(randint);
+            int randIndex = Math.abs(random.nextInt()) % size;
+            return serverNodes.get(randIndex);
         }
     }
 

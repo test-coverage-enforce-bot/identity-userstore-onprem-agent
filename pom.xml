@@ -312,6 +312,7 @@
     <modules>
         <module>components/org.wso2.carbon.identity.user.store.onprem</module>
         <module>components/org.wso2.carbon.identity.user.store.onprem.outbound</module>
+        <module>components/org.wso2.carbon.identity.user.store.common</module>
     </modules>
 
 </project>

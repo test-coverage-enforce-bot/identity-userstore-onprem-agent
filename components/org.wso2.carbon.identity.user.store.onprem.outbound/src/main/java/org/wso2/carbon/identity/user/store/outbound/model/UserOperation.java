@@ -26,6 +26,7 @@ public class UserOperation implements Serializable{
     private String requestData;
     private String responseData;
     private String tenant;
+    private String serverNode;
 
     public String getCorrelationId() {
         return correlationId;
@@ -65,5 +66,13 @@ public class UserOperation implements Serializable{
 
     public void setResponseData(String responseData) {
         this.responseData = responseData;
+    }
+
+    public String getServerNode() {
+        return serverNode;
+    }
+
+    public void setServerNode(String serverNode) {
+        this.serverNode = serverNode;
     }
 }

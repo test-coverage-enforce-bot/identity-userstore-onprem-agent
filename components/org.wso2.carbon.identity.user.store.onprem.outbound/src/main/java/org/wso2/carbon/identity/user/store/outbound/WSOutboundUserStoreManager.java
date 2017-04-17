@@ -53,6 +53,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
@@ -227,7 +228,15 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
 
     private String getServerNode(String tenantDomain) throws WSUserStoreException {
         TokenMgtDao tokenMgtDao = new TokenMgtDao();
-        return tokenMgtDao.getServerNode(tenantDomain);
+        List<String> serverNodes = tokenMgtDao.getServerNodes(tenantDomain);
+        if (serverNodes.isEmpty()) {
+            throw new WSUserStoreException("No server connections to send message for " + tenantDomain);
+        } else {
+            int size = serverNodes.size();
+            Random random = new Random();
+            int randint = Math.abs(random.nextInt()) % size;
+            return serverNodes.get(randint);
+        }
     }
 
     private void addNextOperation(String correlationId, String operationType, String requestData,

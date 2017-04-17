@@ -22,4 +22,7 @@ public class SQLQueries {
     public static final String ACCESS_TOKEN_INSERT = "INSERT INTO UM_ACCESS_TOKEN(UM_TOKEN,UM_STATUS,UM_TENANT) " +
             "VALUES(?,?,?)";
     public static final String ACCESS_TOKEN_DELETE = "DELETE FROM UM_ACCESS_TOKEN WHERE UM_TENANT= ? ";
+    public static final String NEXT_SERVER_NODE_GET = "SELECT A.UM_SERVER_NODE FROM UM_AGENT_CONNECTIONS " +
+            "A,UM_ACCESS_TOKEN T WHERE A.UM_ACCESS_TOKEN = T.UM_TOKEN AND A.UM_STATUS=? AND T.UM_TENANT=? ORDER BY " +
+            "A.UM_LASTUPDATEDATE;";
 }

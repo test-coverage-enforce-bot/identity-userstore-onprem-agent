@@ -74,6 +74,8 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
     private final static String QUEUE_NAME_REQUEST = "requestQueue";
     private final static String QUEUE_NAME_RESPONSE = "responseQueue";
     private final static String MESSAGE_BROKER_ENDPOINT = "MessageBrokerEndPointURL";
+    private final static long QUEUE_MESSAGE_LIFETIME = 5 * 60 * 1000;
+    private final static int MESSAGE_RETRY_LIMIT = 3;
 
     public WSOutboundUserStoreManager() {
 
@@ -197,18 +199,23 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
             producer = connectionFactory
                     .createMessageProducer(requestSession, requestQueue, DeliveryMode.NON_PERSISTENT);
 
-            String correlationId = UUID.randomUUID().toString();
-            responseQueue = connectionFactory.createQueueDestination(requestSession, QUEUE_NAME_RESPONSE);
+            Message responseMessage = null;
+            int retryCount = 0;
+            while (responseMessage == null && MESSAGE_RETRY_LIMIT > retryCount) {
+                String correlationId = UUID.randomUUID().toString();
+                responseQueue = connectionFactory.createQueueDestination(requestSession, QUEUE_NAME_RESPONSE);
 
-            addNextOperation(correlationId, OperationsConstants.UM_OPERATION_TYPE_AUTHENTICATE,
-                    getAuthenticationRequest(userName, credential), requestSession, producer, responseQueue);
+                addNextOperation(correlationId, OperationsConstants.UM_OPERATION_TYPE_AUTHENTICATE,
+                        getAuthenticationRequest(userName, credential), requestSession, producer, responseQueue);
 
-            responseSession = connectionFactory.createSession(connection);
+                responseSession = connectionFactory.createSession(connection);
 
-            String filter = String.format("JMSCorrelationID='%s'", correlationId);
-            MessageConsumer consumer = responseSession.createConsumer(responseQueue, filter);
-            Message rm = consumer.receive(OperationsConstants.UM_MESSAGE_CONSUMER_RECEIVE_TIMEOUT);
-            UserOperation response = (UserOperation) ((ObjectMessage) rm).getObject();
+                String filter = String.format("JMSCorrelationID='%s'", correlationId);
+                MessageConsumer consumer = responseSession.createConsumer(responseQueue, filter);
+                responseMessage = consumer.receive(OperationsConstants.UM_MESSAGE_CONSUMER_RECEIVE_TIMEOUT);
+                retryCount++;
+            }
+            UserOperation response = (UserOperation) ((ObjectMessage) responseMessage).getObject();
             return OperationsConstants.UM_OPERATION_AUTHENTICATE_RESULT_SUCCESS.equals(response.getResponseData());
         } catch (JMSConnectionException e) {
             LOGGER.error("Error occurred while adding message to queue", e);
@@ -254,6 +261,7 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
         ObjectMessage requestMessage = requestSession.createObjectMessage();
         requestMessage.setObject(requestOperation);
         requestMessage.setJMSCorrelationID(correlationId);
+        requestMessage.setJMSExpiration(QUEUE_MESSAGE_LIFETIME);
         requestMessage.setStringProperty("serverNode", getServerNode(tenantDomain));
         requestMessage.setJMSReplyTo(responseQueue);
         producer.send(requestMessage);

@@ -20,6 +20,7 @@ package org.wso2.carbon.identity.user.store.outbound.dao;
 import org.wso2.carbon.identity.core.util.IdentityDatabaseUtil;
 import org.wso2.carbon.identity.user.store.outbound.exception.WSUserStoreException;
 import org.wso2.carbon.identity.user.store.outbound.model.AccessToken;
+import org.wso2.carbon.identity.user.store.outbound.model.AgentConnection;
 import org.wso2.carbon.identity.user.store.outbound.util.DatabaseUtil;
 
 import java.sql.Connection;
@@ -93,6 +94,27 @@ public class TokenMgtDao {
         return serverNodes;
     }
 
-    //SELECT A.UM_SERVER_NODE FROM UM_AGENT_CONNECTIONS A,UM_ACCESS_TOKEN T WHERE A.UM_ACCESS_TOKEN = T.UM_TOKEN AND A.UM_STATUS='A' AND T.UM_TENANT='wso2.com' ORDER BY A.UM_LASTUPDATEDATE;
+    public List<AgentConnection> getAgentConnections(String tenant) throws WSUserStoreException {
+        Connection connection = DatabaseUtil.getInstance().getDBConnection();
+        PreparedStatement insertTokenPrepStmt = null;
+        ResultSet resultSet = null;
+        List<AgentConnection> agentConnections = new ArrayList<>();
+        try {
+            insertTokenPrepStmt = connection.prepareStatement(SQLQueries.AGENT_CONNECTIONS_GET);
+            insertTokenPrepStmt.setString(1, tenant);
+            resultSet = insertTokenPrepStmt.executeQuery();
+            while (resultSet.next()) {
+                AgentConnection agentConnection = new AgentConnection();
+                agentConnection.setStatus(resultSet.getString("UM_STATUS"));
+                agentConnection.setNode(resultSet.getString("UM_NODE"));
+                agentConnections.add(agentConnection);
+            }
+        } catch (SQLException e) {
+            throw new WSUserStoreException("Error occurred reading data", e);
+        } finally {
+            IdentityDatabaseUtil.closeAllConnections(connection, resultSet, insertTokenPrepStmt);
+        }
+        return agentConnections;
+    }
 
 }

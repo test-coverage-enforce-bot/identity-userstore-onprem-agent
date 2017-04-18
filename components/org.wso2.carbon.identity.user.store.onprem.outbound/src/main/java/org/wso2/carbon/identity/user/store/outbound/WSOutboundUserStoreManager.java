@@ -215,8 +215,12 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
                 responseMessage = consumer.receive(OperationsConstants.UM_MESSAGE_CONSUMER_RECEIVE_TIMEOUT);
                 retryCount++;
             }
-            UserOperation response = (UserOperation) ((ObjectMessage) responseMessage).getObject();
-            return OperationsConstants.UM_OPERATION_AUTHENTICATE_RESULT_SUCCESS.equals(response.getResponseData());
+            if (responseMessage != null) {
+                UserOperation response = (UserOperation) ((ObjectMessage) responseMessage).getObject();
+                return OperationsConstants.UM_OPERATION_AUTHENTICATE_RESULT_SUCCESS.equals(response.getResponseData());
+            } else {
+                return false;
+            }
         } catch (JMSConnectionException e) {
             LOGGER.error("Error occurred while adding message to queue", e);
         } catch (JMSException e) {

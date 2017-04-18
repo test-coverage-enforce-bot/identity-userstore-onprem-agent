@@ -382,28 +382,34 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
                 producer = connectionFactory
                         .createMessageProducer(requestSession, requestQueue, DeliveryMode.NON_PERSISTENT);
 
-                String correlationId = UUID.randomUUID().toString();
-                responseQueue = connectionFactory.createQueueDestination(requestSession, QUEUE_NAME_RESPONSE);
 
-                addNextOperation(correlationId, OperationsConstants.UM_OPERATION_TYPE_GET_CLAIMS,
-                        getUserPropertyValuesRequestData(userName, getAllClaimMapAttributes(
-                                claimManager.getAllClaimMappings())),
-                        requestSession, producer, responseQueue);
+                int retryCount = 0;
+                Message responseMessage = null;
 
-                responseSession = connectionFactory.createSession(connection);
+                while (responseMessage == null && MESSAGE_RETRY_LIMIT > retryCount) {
+                    String correlationId = UUID.randomUUID().toString();
+                    responseQueue = connectionFactory.createQueueDestination(requestSession, QUEUE_NAME_RESPONSE);
 
-                String filter = String.format("JMSCorrelationID='%s'", correlationId);
-                MessageConsumer consumer = responseSession.createConsumer(responseQueue, filter);
-                Message rm = consumer.receive(OperationsConstants.UM_MESSAGE_CONSUMER_RECEIVE_TIMEOUT);
-                UserOperation response = (UserOperation) ((ObjectMessage) rm).getObject();
+                    addNextOperation(correlationId, OperationsConstants.UM_OPERATION_TYPE_GET_CLAIMS,
+                            getUserPropertyValuesRequestData(userName, getAllClaimMapAttributes(
+                                    claimManager.getAllClaimMappings())),
+                            requestSession, producer, responseQueue);
 
-                JSONObject resultObj = new JSONObject(response.getResponseData());
-                Iterator iterator = resultObj.keys();
-                while (iterator.hasNext()) {
-                    String key = (String) iterator.next();
-                    allUserAttributes.put(key, (String) resultObj.get(key));
+                    responseSession = connectionFactory.createSession(connection);
+
+                    String filter = String.format("JMSCorrelationID='%s'", correlationId);
+                    MessageConsumer consumer = responseSession.createConsumer(responseQueue, filter);
+                    responseMessage = consumer.receive(OperationsConstants.UM_MESSAGE_CONSUMER_RECEIVE_TIMEOUT);
+                    UserOperation response = (UserOperation) ((ObjectMessage) responseMessage).getObject();
+
+                    JSONObject resultObj = new JSONObject(response.getResponseData());
+                    Iterator iterator = resultObj.keys();
+                    while (iterator.hasNext()) {
+                        String key = (String) iterator.next();
+                        allUserAttributes.put(key, (String) resultObj.get(key));
+                    }
+                    addAttributesToCache(userName, allUserAttributes);
                 }
-                addAttributesToCache(userName, allUserAttributes);
 
             } catch (JMSConnectionException e) {
                 LOGGER.error("Error occurred while adding message to queue", e);
@@ -620,23 +626,28 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
             producer = connectionFactory
                     .createMessageProducer(requestSession, requestQueue, DeliveryMode.NON_PERSISTENT);
 
-            String correlationId = UUID.randomUUID().toString();
-            responseQueue = connectionFactory.createQueueDestination(requestSession, QUEUE_NAME_RESPONSE);
+            int retryCount = 0;
+            Message responseMessage = null;
 
-            addNextOperation(correlationId, OperationsConstants.UM_OPERATION_TYPE_GET_USER_ROLES,
-                    doGetExternalRoleListOfUserRequestData(userName), requestSession, producer, responseQueue);
+            while (responseMessage == null && MESSAGE_RETRY_LIMIT > retryCount) {
+                String correlationId = UUID.randomUUID().toString();
+                responseQueue = connectionFactory.createQueueDestination(requestSession, QUEUE_NAME_RESPONSE);
 
-            responseSession = connectionFactory.createSession(connection);
+                addNextOperation(correlationId, OperationsConstants.UM_OPERATION_TYPE_GET_USER_ROLES,
+                        doGetExternalRoleListOfUserRequestData(userName), requestSession, producer, responseQueue);
 
-            String selector = String.format("JMSCorrelationID='%s'", correlationId);
-            MessageConsumer consumer = responseSession.createConsumer(responseQueue, selector);
-            Message rm = consumer.receive(OperationsConstants.UM_MESSAGE_CONSUMER_RECEIVE_TIMEOUT);
-            UserOperation response = (UserOperation) ((ObjectMessage) rm).getObject();
+                responseSession = connectionFactory.createSession(connection);
 
-            JSONObject resultObj = new JSONObject(response.getResponseData());
-            JSONArray groups = resultObj.getJSONArray("groups");
-            for (int i = 0; i < groups.length(); i++) {
-                groupList.add((String) groups.get(i));
+                String selector = String.format("JMSCorrelationID='%s'", correlationId);
+                MessageConsumer consumer = responseSession.createConsumer(responseQueue, selector);
+                responseMessage = consumer.receive(OperationsConstants.UM_MESSAGE_CONSUMER_RECEIVE_TIMEOUT);
+                UserOperation response = (UserOperation) ((ObjectMessage) responseMessage).getObject();
+
+                JSONObject resultObj = new JSONObject(response.getResponseData());
+                JSONArray groups = resultObj.getJSONArray("groups");
+                for (int i = 0; i < groups.length(); i++) {
+                    groupList.add((String) groups.get(i));
+                }
             }
 
         } catch (JMSConnectionException e) {
@@ -704,27 +715,31 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
             producer = connectionFactory
                     .createMessageProducer(requestSession, requestQueue, DeliveryMode.NON_PERSISTENT);
 
-            String correlationId = UUID.randomUUID().toString();
-            responseQueue = connectionFactory.createQueueDestination(requestSession, QUEUE_NAME_RESPONSE);
+            int retryCount = 0;
+            Message responseMessage = null;
 
-            addNextOperation(correlationId, OperationsConstants.UM_OPERATION_TYPE_GET_ROLES, "", requestSession,
-                    producer, responseQueue);
+            while (responseMessage == null && MESSAGE_RETRY_LIMIT > retryCount) {
 
-            responseSession = connectionFactory.createSession(connection);
+                String correlationId = UUID.randomUUID().toString();
+                responseQueue = connectionFactory.createQueueDestination(requestSession, QUEUE_NAME_RESPONSE);
+                addNextOperation(correlationId, OperationsConstants.UM_OPERATION_TYPE_GET_ROLES, "", requestSession,
+                        producer, responseQueue);
+                responseSession = connectionFactory.createSession(connection);
 
-            String selector = String.format("JMSCorrelationID='%s'", correlationId);
-            MessageConsumer consumer = responseSession.createConsumer(responseQueue, selector);
-            Message rm = consumer.receive(OperationsConstants.UM_MESSAGE_CONSUMER_RECEIVE_TIMEOUT);
-            UserOperation response = (UserOperation) ((ObjectMessage) rm).getObject();
+                String selector = String.format("JMSCorrelationID='%s'", correlationId);
+                MessageConsumer consumer = responseSession.createConsumer(responseQueue, selector);
+                responseMessage = consumer.receive(OperationsConstants.UM_MESSAGE_CONSUMER_RECEIVE_TIMEOUT);
+                UserOperation response = (UserOperation) ((ObjectMessage) responseMessage).getObject();
 
-            JSONObject resultObj = new JSONObject(response.getResponseData());
-            JSONArray groups = resultObj.getJSONArray("groups");
+                JSONObject resultObj = new JSONObject(response.getResponseData());
+                JSONArray groups = resultObj.getJSONArray("groups");
 
-            String userStoreDomain = this.realmConfig.getUserStoreProperty("DomainName");
-            for (int i = 0; i < groups.length(); i++) {
-                String roleName = (String) groups.get(i);
-                roleName = UserCoreUtil.addDomainToName(roleName, userStoreDomain);
-                groupList.add(roleName);
+                String userStoreDomain = this.realmConfig.getUserStoreProperty("DomainName");
+                for (int i = 0; i < groups.length(); i++) {
+                    String roleName = (String) groups.get(i);
+                    roleName = UserCoreUtil.addDomainToName(roleName, userStoreDomain);
+                    groupList.add(roleName);
+                }
             }
 
         } catch (JMSConnectionException e) {

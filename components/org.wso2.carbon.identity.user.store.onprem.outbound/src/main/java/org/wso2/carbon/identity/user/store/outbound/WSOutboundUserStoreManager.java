@@ -74,6 +74,7 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
     private final static String QUEUE_NAME_REQUEST = "requestQueue";
     private final static String QUEUE_NAME_RESPONSE = "responseQueue";
     private final static String MESSAGE_BROKER_ENDPOINT = "MessageBrokerEndPointURL";
+    private final static String DIRECTORY_NAME = "DirectoryName";
     private final static long QUEUE_MESSAGE_LIFETIME = 5 * 60 * 1000;
     private final static int MESSAGE_RETRY_LIMIT = 3;
 
@@ -549,9 +550,10 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
 
         Properties properties = new Properties();
         Property endpoint = new Property(MESSAGE_BROKER_ENDPOINT, "", "Message Broker connection URL", null);
+        Property directoryName = new Property(DIRECTORY_NAME, "", "Directory Name", null);
         Property disabled = new Property("Disabled", "false", "Disabled#Check to disable the user store", null);
 
-        Property[] mandatoryProperties = new Property[] { endpoint };
+        Property[] mandatoryProperties = new Property[] { endpoint, directoryName };
         Property[] optionalProperties = new Property[] { disabled };
 
         properties.setOptionalProperties(optionalProperties);

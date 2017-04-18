@@ -24,6 +24,10 @@ import org.wso2.carbon.core.AbstractAdmin;
 import org.wso2.carbon.identity.user.store.outbound.dao.TokenMgtDao;
 import org.wso2.carbon.identity.user.store.outbound.exception.WSUserStoreException;
 import org.wso2.carbon.identity.user.store.outbound.model.AccessToken;
+import org.wso2.carbon.identity.user.store.outbound.model.AgentConnection;
+
+import java.util.Collections;
+import java.util.List;
 
 public class TokenMgtService extends AbstractAdmin {
 
@@ -36,7 +40,7 @@ public class TokenMgtService extends AbstractAdmin {
         AccessToken accessToken = new AccessToken();
         accessToken.setAccessToken(token);
         accessToken.setTenant(tenantDomain);
-        accessToken.setStatus("A");
+        accessToken.setStatus("A"); //TODO constant
         try {
             return tokenMgtDao.insertAccessToken(accessToken);
         } catch (WSUserStoreException e) {
@@ -64,5 +68,15 @@ public class TokenMgtService extends AbstractAdmin {
     public boolean validateAccessToken(String token) {
 
         return true;
+    }
+
+    public List<AgentConnection> getAgentConnections(String tenant) {
+        TokenMgtDao tokenMgtDao = new TokenMgtDao();
+        try {
+            return tokenMgtDao.getAgentConnections(tenant);
+        } catch (WSUserStoreException e) {
+            LOGGER.error("Error occurred while inserting token", e);
+        }
+        return Collections.emptyList();
     }
 }

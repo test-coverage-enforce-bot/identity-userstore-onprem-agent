@@ -33,13 +33,14 @@ public class TokenMgtService extends AbstractAdmin {
 
     private static Log LOGGER = LogFactory.getLog(TokenMgtService.class);
 
-    public boolean insertAccessToken(String token) {
+    public boolean insertAccessToken(String domain, String token) {
 
         String tenantDomain = CarbonContext.getThreadLocalCarbonContext().getTenantDomain();
         TokenMgtDao tokenMgtDao = new TokenMgtDao();
         AccessToken accessToken = new AccessToken();
         accessToken.setAccessToken(token);
         accessToken.setTenant(tenantDomain);
+        accessToken.setDomain(domain);
         accessToken.setStatus("A"); //TODO constant
         try {
             return tokenMgtDao.insertAccessToken(accessToken);
@@ -49,11 +50,11 @@ public class TokenMgtService extends AbstractAdmin {
         return false;
     }
 
-    public boolean deleteAccessToken(String tenantDomain) {
+    public boolean deleteAccessToken(String domain) {
 
         TokenMgtDao tokenMgtDao = new TokenMgtDao();
         try {
-            return tokenMgtDao.deleteAccessToken(tenantDomain);
+            return tokenMgtDao.deleteAccessToken(domain);
         } catch (WSUserStoreException e) {
             LOGGER.error("Error occurred while inserting token", e);
         }
@@ -70,13 +71,24 @@ public class TokenMgtService extends AbstractAdmin {
         return true;
     }
 
-    public List<AgentConnection> getAgentConnections(String tenant) {
+    public List<AgentConnection> getAgentConnections(String domain) {
         TokenMgtDao tokenMgtDao = new TokenMgtDao();
         try {
-            return tokenMgtDao.getAgentConnections(tenant);
+            return tokenMgtDao.getAgentConnections(domain);
         } catch (WSUserStoreException e) {
             LOGGER.error("Error occurred while inserting token", e);
         }
         return Collections.emptyList();
+    }
+
+    public boolean deleteConnections(String domain) {
+
+        TokenMgtDao tokenMgtDao = new TokenMgtDao();
+        try {
+            return tokenMgtDao.deleteConnections(domain);
+        } catch (WSUserStoreException e) {
+            LOGGER.error("Error occurred while inserting token", e);
+        }
+        return false;
     }
 }

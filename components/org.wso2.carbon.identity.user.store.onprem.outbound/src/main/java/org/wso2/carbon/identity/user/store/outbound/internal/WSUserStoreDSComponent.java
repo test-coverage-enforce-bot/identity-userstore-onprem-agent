@@ -21,6 +21,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.osgi.service.component.ComponentContext;
 import org.wso2.carbon.identity.user.store.outbound.WSOutboundUserStoreManager;
+import org.wso2.carbon.identity.user.store.outbound.util.DatabaseUtil;
 import org.wso2.carbon.registry.core.service.RegistryService;
 import org.wso2.carbon.user.api.UserStoreManager;
 import org.wso2.carbon.user.core.service.RealmService;
@@ -44,6 +45,7 @@ public class WSUserStoreDSComponent {
         try {
 
             UserStoreManager remoteStoreManager = new WSOutboundUserStoreManager();
+            DatabaseUtil.getInstance(); //TODO have to think how to initilize datasource
             ctxt.getBundleContext().registerService(UserStoreManager.class.getName(),
                     remoteStoreManager, null);
 

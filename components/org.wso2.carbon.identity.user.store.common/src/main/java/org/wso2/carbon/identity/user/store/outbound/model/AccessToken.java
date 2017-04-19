@@ -22,6 +22,7 @@ public class AccessToken {
     private String accessToken;
     private String status;
     private String tenant;
+    private String domain;
 
     public String getAccessToken() {
         return accessToken;
@@ -45,5 +46,13 @@ public class AccessToken {
 
     public void setTenant(String tenant) {
         this.tenant = tenant;
+    }
+
+    public String getDomain() {
+        return domain;
+    }
+
+    public void setDomain(String domain) {
+        this.domain = domain;
     }
 }

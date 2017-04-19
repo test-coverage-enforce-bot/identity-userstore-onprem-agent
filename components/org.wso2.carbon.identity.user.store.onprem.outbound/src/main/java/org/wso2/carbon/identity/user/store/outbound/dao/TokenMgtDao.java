@@ -46,6 +46,7 @@ public class TokenMgtDao {
             insertTokenPrepStmt.setString(1, token.getAccessToken());
             insertTokenPrepStmt.setString(2, token.getStatus());
             insertTokenPrepStmt.setString(3, token.getTenant());
+            insertTokenPrepStmt.setString(4, token.getDomain());
             insertTokenPrepStmt.executeUpdate();
             connection.commit();
             return true;
@@ -56,17 +57,17 @@ public class TokenMgtDao {
         }
     }
 
-    public boolean deleteAccessToken(String tenantDomain) throws WSUserStoreException {
+    public boolean deleteAccessToken(String domain) throws WSUserStoreException {
         Connection connection = DatabaseUtil.getInstance().getDBConnection();
         PreparedStatement insertTokenPrepStmt = null;
         try {
             insertTokenPrepStmt = connection.prepareStatement(SQLQueries.ACCESS_TOKEN_DELETE);
-            insertTokenPrepStmt.setString(1, tenantDomain);
+            insertTokenPrepStmt.setString(1, domain);
             insertTokenPrepStmt.executeUpdate();
             connection.commit();
             return true;
         } catch (SQLException e) {
-            throw new WSUserStoreException("Error occurred while deleting access tokens in tenant : " + tenantDomain,
+            throw new WSUserStoreException("Error occurred while deleting access for domain : " + domain,
                     e);
         } finally {
             IdentityDatabaseUtil.closeAllConnections(connection, null, insertTokenPrepStmt);
@@ -80,7 +81,7 @@ public class TokenMgtDao {
         List<String> serverNodes = new ArrayList<>();
         try {
             insertTokenPrepStmt = connection.prepareStatement(SQLQueries.NEXT_SERVER_NODE_GET);
-            insertTokenPrepStmt.setString(1, "A");
+            insertTokenPrepStmt.setString(1, "C");
             insertTokenPrepStmt.setString(2, tenant);
             resultSet = insertTokenPrepStmt.executeQuery();
             while (resultSet.next()) {
@@ -94,14 +95,14 @@ public class TokenMgtDao {
         return serverNodes;
     }
 
-    public List<AgentConnection> getAgentConnections(String tenant) throws WSUserStoreException {
+    public List<AgentConnection> getAgentConnections(String domain) throws WSUserStoreException {
         Connection connection = DatabaseUtil.getInstance().getDBConnection();
         PreparedStatement insertTokenPrepStmt = null;
         ResultSet resultSet = null;
         List<AgentConnection> agentConnections = new ArrayList<>();
         try {
             insertTokenPrepStmt = connection.prepareStatement(SQLQueries.AGENT_CONNECTIONS_GET);
-            insertTokenPrepStmt.setString(1, tenant);
+            insertTokenPrepStmt.setString(1, domain);
             resultSet = insertTokenPrepStmt.executeQuery();
             while (resultSet.next()) {
                 AgentConnection agentConnection = new AgentConnection();
@@ -117,4 +118,21 @@ public class TokenMgtDao {
         return agentConnections;
     }
 
+    public boolean deleteConnections(String domain) throws WSUserStoreException {
+
+        Connection connection = DatabaseUtil.getInstance().getDBConnection();
+        PreparedStatement insertTokenPrepStmt = null;
+        try {
+            insertTokenPrepStmt = connection.prepareStatement(SQLQueries.AGENT_CONNECTIONS_DELETE_BY_DOMAIN);
+            insertTokenPrepStmt.setString(1, domain);
+            insertTokenPrepStmt.executeUpdate();
+            connection.commit();
+            return true;
+        } catch (SQLException e) {
+            throw new WSUserStoreException("Error occurred while deleting access for domain : " + domain,
+                    e);
+        } finally {
+            IdentityDatabaseUtil.closeAllConnections(connection, null, insertTokenPrepStmt);
+        }
+    }
 }

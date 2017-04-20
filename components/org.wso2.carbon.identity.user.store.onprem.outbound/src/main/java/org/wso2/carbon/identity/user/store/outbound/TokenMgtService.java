@@ -23,19 +23,32 @@ import org.wso2.carbon.context.CarbonContext;
 import org.wso2.carbon.core.AbstractAdmin;
 import org.wso2.carbon.identity.user.store.outbound.dao.TokenMgtDao;
 import org.wso2.carbon.identity.user.store.outbound.exception.WSUserStoreException;
+import org.wso2.carbon.identity.user.store.outbound.messaging.JMSConnectionException;
+import org.wso2.carbon.identity.user.store.outbound.messaging.JMSConnectionFactory;
 import org.wso2.carbon.identity.user.store.outbound.model.AccessToken;
 import org.wso2.carbon.identity.user.store.outbound.model.AgentConnection;
+import org.wso2.carbon.identity.user.store.outbound.model.ServerOperation;
+import org.wso2.carbon.identity.user.store.outbound.model.UserOperation;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
+import javax.jms.Connection;
+import javax.jms.DeliveryMode;
+import javax.jms.Destination;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.ObjectMessage;
+import javax.jms.Session;
 
 public class TokenMgtService extends AbstractAdmin {
 
     private static Log LOGGER = LogFactory.getLog(TokenMgtService.class);
 
-    public boolean insertAccessToken(String domain, String token) {
+    public boolean insertAccessToken(String tenantDomain, String domain, String token) {
 
-        String tenantDomain = CarbonContext.getThreadLocalCarbonContext().getTenantDomain();
         TokenMgtDao tokenMgtDao = new TokenMgtDao();
         AccessToken accessToken = new AccessToken();
         accessToken.setAccessToken(token);
@@ -50,19 +63,25 @@ public class TokenMgtService extends AbstractAdmin {
         return false;
     }
 
-    public boolean deleteAccessToken(String domain) {
+    public boolean deleteAccessToken(String tenantDomain, String domain) {
 
         TokenMgtDao tokenMgtDao = new TokenMgtDao();
         try {
-            return tokenMgtDao.deleteAccessToken(domain);
+            return tokenMgtDao.deleteAccessToken(tenantDomain, domain);
         } catch (WSUserStoreException e) {
             LOGGER.error("Error occurred while inserting token", e);
         }
         return false;
     }
 
-    public boolean updateAccessToken(String token) {
+    public boolean updateAccessToken(String oldToken, String newToken, String domain) {
 
+        TokenMgtDao tokenMgtDao = new TokenMgtDao();
+        try {
+            return tokenMgtDao.updateAccessToken(oldToken, newToken, domain);
+        } catch (WSUserStoreException e) {
+            LOGGER.error("Error occurred while updating token", e);
+        }
         return true;
     }
 
@@ -71,21 +90,21 @@ public class TokenMgtService extends AbstractAdmin {
         return true;
     }
 
-    public List<AgentConnection> getAgentConnections(String domain) {
+    public List<AgentConnection> getAgentConnections(String tenantDomain, String domain) {
         TokenMgtDao tokenMgtDao = new TokenMgtDao();
         try {
-            return tokenMgtDao.getAgentConnections(domain);
+            return tokenMgtDao.getAgentConnections(tenantDomain, domain);
         } catch (WSUserStoreException e) {
             LOGGER.error("Error occurred while inserting token", e);
         }
         return Collections.emptyList();
     }
 
-    public boolean deleteConnections(String domain) {
+    public boolean deleteConnections(String tenantDomain, String domain) {
 
         TokenMgtDao tokenMgtDao = new TokenMgtDao();
         try {
-            return tokenMgtDao.deleteConnections(domain);
+            return tokenMgtDao.deleteConnections(tenantDomain, domain);
         } catch (WSUserStoreException e) {
             LOGGER.error("Error occurred while inserting token", e);
         }

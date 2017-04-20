@@ -24,6 +24,8 @@ public class OperationsConstants {
     public final static String UM_OPERATION_TYPE_GET_USER_ROLES = "getuserroles";
     public final static String UM_OPERATION_TYPE_GET_ROLES = "getroles";
 
+    public final static String SERVER_OPERATION_TYPE_KILL_AGENTS = "killagents";
+
     public final static String UM_OPERATION_AUTHENTICATE_RESULT_SUCCESS = "SUCCESS";
 
     public final static int UM_MESSAGE_CONSUMER_RECEIVE_TIMEOUT = 6000;

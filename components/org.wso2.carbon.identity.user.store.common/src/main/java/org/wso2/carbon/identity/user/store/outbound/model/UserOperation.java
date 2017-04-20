@@ -19,7 +19,7 @@ package org.wso2.carbon.identity.user.store.outbound.model;
 
 import java.io.Serializable;
 
-public class UserOperation implements Serializable{
+public class UserOperation implements Serializable {
 
     private String correlationId;
     private String requestType;

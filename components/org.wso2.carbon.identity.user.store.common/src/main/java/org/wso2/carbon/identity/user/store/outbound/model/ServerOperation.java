@@ -17,13 +17,16 @@
  */
 package org.wso2.carbon.identity.user.store.outbound.model;
 
+import java.io.Serializable;
+
 /**
  * Server operation
  */
-public class ServerOperation {
+public class ServerOperation implements Serializable {
 
     private String operationType;
     private String domain;
+    private String tenantDomain;
 
     public String getOperationType() {
         return operationType;
@@ -39,5 +42,13 @@ public class ServerOperation {
 
     public void setDomain(String domain) {
         this.domain = domain;
+    }
+
+    public String getTenantDomain() {
+        return tenantDomain;
+    }
+
+    public void setTenantDomain(String tenantDomain) {
+        this.tenantDomain = tenantDomain;
     }
 }

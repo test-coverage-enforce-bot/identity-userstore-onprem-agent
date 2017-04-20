@@ -140,6 +140,27 @@ public class TokenMgtDao {
         }
     }
 
+    public boolean updateConnectionStatus(String tenantDomain, String domain, String status)
+            throws WSUserStoreException {
+
+        Connection connection = DatabaseUtil.getInstance().getDBConnection();
+        PreparedStatement insertTokenPrepStmt = null;
+        try {
+            insertTokenPrepStmt = connection.prepareStatement(SQLQueries.AGENT_CONNECTIONS_UPDATE_STATUS_BY_DOMAIN);
+            insertTokenPrepStmt.setString(1, status);
+            insertTokenPrepStmt.setString(2, domain);
+            insertTokenPrepStmt.setString(3, tenantDomain);
+            insertTokenPrepStmt.executeUpdate();
+            connection.commit();
+            return true;
+        } catch (SQLException e) {
+            throw new WSUserStoreException("Error occurred while deleting access for domain : " + domain,
+                    e);
+        } finally {
+            IdentityDatabaseUtil.closeAllConnections(connection, null, insertTokenPrepStmt);
+        }
+    }
+
     public boolean updateAccessToken(String oldToken, String newToken, String domain) throws WSUserStoreException {
 
         Connection connection = DatabaseUtil.getInstance().getDBConnection();

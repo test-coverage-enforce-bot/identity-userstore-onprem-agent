@@ -19,6 +19,7 @@ package org.wso2.carbon.identity.user.store.outbound.model;
 
 public class AccessToken {
 
+    private int id;
     private String accessToken;
     private String status;
     private String tenant;
@@ -54,5 +55,13 @@ public class AccessToken {
 
     public void setDomain(String domain) {
         this.domain = domain;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 }

@@ -262,6 +262,7 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
         requestOperation.setRequestData(requestData);
         requestOperation.setTenant(tenantDomain);
         requestOperation.setRequestType(operationType);
+        requestOperation.setDomain(realmConfig.getUserStoreProperty("DomainName"));
 
         ObjectMessage requestMessage = requestSession.createObjectMessage();
         requestMessage.setObject(requestOperation);
@@ -760,5 +761,11 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
             }
         }
         return groupList.toArray(new String[groupList.size()]);
+    }
+
+
+
+    public void killAgentConnections(String tenant, String domain){
+
     }
 }

@@ -26,6 +26,7 @@ public class UserOperation implements Serializable{
     private String requestData;
     private String responseData;
     private String tenant;
+    private String domain;
     private String serverNode;
 
     public String getCorrelationId() {
@@ -74,5 +75,13 @@ public class UserOperation implements Serializable{
 
     public void setServerNode(String serverNode) {
         this.serverNode = serverNode;
+    }
+
+    public String getDomain() {
+        return domain;
+    }
+
+    public void setDomain(String domain) {
+        this.domain = domain;
     }
 }

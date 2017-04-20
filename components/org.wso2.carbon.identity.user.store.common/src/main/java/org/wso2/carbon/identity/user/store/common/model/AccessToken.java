@@ -2,7 +2,7 @@
  * Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * WSO2 Inc. licenses this file to you under the Apache License,
- * Version 2.0 (the "License"); you may not use this file except
+ *  Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License.
  * You may obtain a copy of the License at
  *
@@ -15,25 +15,38 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.wso2.carbon.identity.user.store.outbound.model;
+package org.wso2.carbon.identity.user.store.common.model;
 
-import java.io.Serializable;
+public class AccessToken {
 
-/**
- * Server operation
- */
-public class ServerOperation implements Serializable {
-
-    private String operationType;
+    private int id;
+    private String accessToken;
+    private String status;
+    private String tenant;
     private String domain;
-    private String tenantDomain;
 
-    public String getOperationType() {
-        return operationType;
+    public String getAccessToken() {
+        return accessToken;
     }
 
-    public void setOperationType(String operationType) {
-        this.operationType = operationType;
+    public void setAccessToken(String accessToken) {
+        this.accessToken = accessToken;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getTenant() {
+        return tenant;
+    }
+
+    public void setTenant(String tenant) {
+        this.tenant = tenant;
     }
 
     public String getDomain() {
@@ -44,11 +57,11 @@ public class ServerOperation implements Serializable {
         this.domain = domain;
     }
 
-    public String getTenantDomain() {
-        return tenantDomain;
+    public int getId() {
+        return id;
     }
 
-    public void setTenantDomain(String tenantDomain) {
-        this.tenantDomain = tenantDomain;
+    public void setId(int id) {
+        this.id = id;
     }
 }

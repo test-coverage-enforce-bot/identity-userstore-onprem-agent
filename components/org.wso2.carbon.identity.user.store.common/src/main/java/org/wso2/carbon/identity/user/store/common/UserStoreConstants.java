@@ -15,7 +15,7 @@
 * specific language governing permissions and limitations
 * under the License.
 */
-package org.wso2.carbon.identity.user.store.outbound;
+package org.wso2.carbon.identity.user.store.common;
 
 public class UserStoreConstants {
 

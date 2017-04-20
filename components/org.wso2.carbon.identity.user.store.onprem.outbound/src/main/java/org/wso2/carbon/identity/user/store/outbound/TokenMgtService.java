@@ -21,13 +21,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.context.CarbonContext;
 import org.wso2.carbon.core.AbstractAdmin;
+import org.wso2.carbon.identity.user.store.common.UserStoreConstants;
 import org.wso2.carbon.identity.user.store.outbound.dao.TokenMgtDao;
 import org.wso2.carbon.identity.user.store.outbound.exception.WSUserStoreException;
 import org.wso2.carbon.identity.user.store.outbound.messaging.JMSConnectionException;
 import org.wso2.carbon.identity.user.store.outbound.messaging.JMSConnectionFactory;
-import org.wso2.carbon.identity.user.store.outbound.model.AccessToken;
-import org.wso2.carbon.identity.user.store.outbound.model.AgentConnection;
-import org.wso2.carbon.identity.user.store.outbound.model.ServerOperation;
+import org.wso2.carbon.identity.user.store.common.model.AccessToken;
+import org.wso2.carbon.identity.user.store.common.model.AgentConnection;
+import org.wso2.carbon.identity.user.store.common.model.ServerOperation;
 import org.wso2.carbon.user.api.RealmConfiguration;
 import org.wso2.carbon.user.api.UserStoreException;
 

@@ -19,8 +19,8 @@ package org.wso2.carbon.identity.user.store.outbound.dao;
 
 import org.wso2.carbon.identity.core.util.IdentityDatabaseUtil;
 import org.wso2.carbon.identity.user.store.outbound.exception.WSUserStoreException;
-import org.wso2.carbon.identity.user.store.outbound.model.AccessToken;
-import org.wso2.carbon.identity.user.store.outbound.model.AgentConnection;
+import org.wso2.carbon.identity.user.store.common.model.AccessToken;
+import org.wso2.carbon.identity.user.store.common.model.AgentConnection;
 import org.wso2.carbon.identity.user.store.outbound.util.DatabaseUtil;
 
 import java.sql.Connection;

@@ -102,18 +102,7 @@
             <groupId>net.minidev</groupId>
             <artifactId>json-smart</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>activemq-core</artifactId>
-            <version>5.7.0</version>
-            <!--TODO-->
-        </dependency>
-        <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>activemq-all</artifactId>
-            <version>5.10.0</version>
-            <!--TODO-->
-        </dependency>
+
         <dependency>
             <groupId>org.wso2.carbon.transport</groupId>
             <artifactId>org.wso2.carbon.transport.jms</artifactId>

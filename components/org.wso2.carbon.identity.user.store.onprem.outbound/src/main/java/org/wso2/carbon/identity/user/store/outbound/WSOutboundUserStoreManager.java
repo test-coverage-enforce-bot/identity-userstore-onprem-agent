@@ -32,6 +32,7 @@ import org.wso2.carbon.identity.user.store.outbound.cache.UserAttributeCacheKey;
 import org.wso2.carbon.identity.user.store.outbound.dao.TokenMgtDao;
 import org.wso2.carbon.identity.user.store.outbound.exception.WSUserStoreException;
 import org.wso2.carbon.identity.user.store.common.model.UserOperation;
+import org.wso2.carbon.identity.user.store.outbound.util.MessageRequestUtil;
 import org.wso2.carbon.user.api.ClaimMapping;
 import org.wso2.carbon.user.api.Properties;
 import org.wso2.carbon.user.api.Property;
@@ -174,10 +175,6 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
         return false;
     }
 
-    private String getAuthenticationRequest(String userName, Object credential) {
-        return String.format("{username : '%s', password : '%s'}", userName, credential);
-    }
-
     private boolean processAuthenticationRequest(String userName, Object credential) {
 
         JMSConnectionFactory connectionFactory = new JMSConnectionFactory();
@@ -188,6 +185,9 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
         Destination responseQueue;
         MessageProducer producer;
         try {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Sending authentication request to queue for tenant  - [" + this.tenantId + "]");
+            }
             connectionFactory.createActiveMQConnectionFactory(getMessageBrokerURL());
             connection = connectionFactory.createConnection();
             connectionFactory.start(connection);
@@ -205,7 +205,8 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
                         .createQueueDestination(requestSession, UserStoreConstants.QUEUE_NAME_RESPONSE);
 
                 addNextUserOperation(correlationId, UserStoreConstants.UM_OPERATION_TYPE_AUTHENTICATE,
-                        getAuthenticationRequest(userName, credential), requestSession, producer, responseQueue);
+                        MessageRequestUtil.getAuthenticationRequest(userName, credential), requestSession, producer,
+                        responseQueue);
 
                 responseSession = connectionFactory.createSession(connection);
 
@@ -236,6 +237,12 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
         return false;
     }
 
+    /**
+     * Get server nodes which agents connected for a particular tenant domain
+     * @param tenantDomain
+     * @return
+     * @throws WSUserStoreException
+     */
     private String getServerNode(String tenantDomain) throws WSUserStoreException {
         TokenMgtDao tokenMgtDao = new TokenMgtDao();
         List<String> serverNodes = tokenMgtDao.getServerNodes(tenantDomain);
@@ -249,6 +256,17 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
         }
     }
 
+    /**
+     * Add next user operation to queue
+     * @param correlationId
+     * @param operationType
+     * @param requestData
+     * @param requestSession
+     * @param producer
+     * @param responseQueue
+     * @throws JMSException
+     * @throws WSUserStoreException
+     */
     private void addNextUserOperation(String correlationId, String operationType, String requestData,
             Session requestSession, MessageProducer producer, Destination responseQueue)
             throws JMSException, WSUserStoreException {
@@ -266,10 +284,10 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
         requestMessage.setObject(requestOperation);
         requestMessage.setJMSCorrelationID(correlationId);
         requestMessage.setJMSExpiration(UserStoreConstants.QUEUE_MESSAGE_LIFETIME);
-        requestMessage.setStringProperty("serverNode", getServerNode(tenantDomain));
+        requestMessage.setStringProperty(UserStoreConstants.UM_MESSAGE_SELECTOR_SERVER_NODE,
+                getServerNode(tenantDomain));
         requestMessage.setJMSReplyTo(responseQueue);
         producer.send(requestMessage);
-
     }
 
     @Override
@@ -340,13 +358,7 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
 
     }
 
-    private String getUserPropertyValuesRequestData(String username, String attributes) {
-        return String.format("{username : '%s', attributes : '%s'}", username, attributes);
-    }
 
-    private String doGetExternalRoleListOfUserRequestData(String username) {
-        return String.format("{username : '%s'}", username);
-    }
 
     private String getAllClaimMapAttributes(ClaimMapping[] claimMappings) {
 
@@ -393,7 +405,7 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
                             .createQueueDestination(requestSession, UserStoreConstants.QUEUE_NAME_RESPONSE);
 
                     addNextUserOperation(correlationId, UserStoreConstants.UM_OPERATION_TYPE_GET_CLAIMS,
-                            getUserPropertyValuesRequestData(userName, getAllClaimMapAttributes(
+                            MessageRequestUtil.getUserPropertyValuesRequestData(userName, getAllClaimMapAttributes(
                                     claimManager.getAllClaimMappings())),
                             requestSession, producer, responseQueue);
 
@@ -580,8 +592,7 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
     }
 
     public String[] doListUsers(String filter, int maxItemLimit) throws UserStoreException {
-
-        return new String[] { "" };//This method is currently not supported and have to implement it
+        throw new UserStoreException("UserStoreManager method not supported : #doListUsers");
     }
 
     @Override
@@ -639,7 +650,8 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
                         .createQueueDestination(requestSession, UserStoreConstants.QUEUE_NAME_RESPONSE);
 
                 addNextUserOperation(correlationId, UserStoreConstants.UM_OPERATION_TYPE_GET_USER_ROLES,
-                        doGetExternalRoleListOfUserRequestData(userName), requestSession, producer, responseQueue);
+                        MessageRequestUtil.doGetExternalRoleListOfUserRequestData(
+                                userName), requestSession, producer, responseQueue);
 
                 responseSession = connectionFactory.createSession(connection);
 

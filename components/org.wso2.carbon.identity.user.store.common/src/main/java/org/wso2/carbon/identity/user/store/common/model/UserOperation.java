@@ -19,6 +19,9 @@ package org.wso2.carbon.identity.user.store.common.model;
 
 import java.io.Serializable;
 
+/**
+ * User operation model
+ */
 public class UserOperation implements Serializable {
 
     private String correlationId;

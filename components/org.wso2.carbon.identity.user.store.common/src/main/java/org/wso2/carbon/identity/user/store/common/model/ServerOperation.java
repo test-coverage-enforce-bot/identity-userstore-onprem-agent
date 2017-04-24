@@ -20,7 +20,7 @@ package org.wso2.carbon.identity.user.store.common.model;
 import java.io.Serializable;
 
 /**
- * Server operation
+ * Server operation model
  */
 public class ServerOperation implements Serializable {
 

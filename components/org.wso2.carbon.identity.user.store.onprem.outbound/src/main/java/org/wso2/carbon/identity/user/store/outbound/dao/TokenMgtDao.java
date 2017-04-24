@@ -18,6 +18,7 @@
 package org.wso2.carbon.identity.user.store.outbound.dao;
 
 import org.wso2.carbon.identity.core.util.IdentityDatabaseUtil;
+import org.wso2.carbon.identity.user.store.common.UserStoreConstants;
 import org.wso2.carbon.identity.user.store.outbound.exception.WSUserStoreException;
 import org.wso2.carbon.identity.user.store.common.model.AccessToken;
 import org.wso2.carbon.identity.user.store.common.model.AgentConnection;
@@ -34,8 +35,8 @@ public class TokenMgtDao {
 
     /**
      * Inserting access token
-     * @param token
-     * @return
+     * @param token access token
+     * @return result of the insertion
      * @throws WSUserStoreException
      */
     public boolean insertAccessToken(AccessToken token) throws WSUserStoreException {
@@ -57,6 +58,13 @@ public class TokenMgtDao {
         }
     }
 
+    /**
+     * Delete access token for particular tenant and user store
+     * @param tenantDomain
+     * @param domain
+     * @return
+     * @throws WSUserStoreException
+     */
     public boolean deleteAccessToken(String tenantDomain, String domain) throws WSUserStoreException {
         Connection connection = DatabaseUtil.getInstance().getDBConnection();
         PreparedStatement insertTokenPrepStmt = null;
@@ -75,6 +83,12 @@ public class TokenMgtDao {
         }
     }
 
+    /**
+     * Get available server node information for a tenant
+     * @param tenant
+     * @return List of server nodes
+     * @throws WSUserStoreException
+     */
     public List<String> getServerNodes(String tenant) throws WSUserStoreException {
         Connection connection = DatabaseUtil.getInstance().getDBConnection();
         PreparedStatement insertTokenPrepStmt = null;
@@ -82,20 +96,27 @@ public class TokenMgtDao {
         List<String> serverNodes = new ArrayList<>();
         try {
             insertTokenPrepStmt = connection.prepareStatement(SQLQueries.NEXT_SERVER_NODE_GET);
-            insertTokenPrepStmt.setString(1, "C");
+            insertTokenPrepStmt.setString(1, UserStoreConstants.CLIENT_CONNECTION_STATUS_CONNECTED);
             insertTokenPrepStmt.setString(2, tenant);
             resultSet = insertTokenPrepStmt.executeQuery();
             while (resultSet.next()) {
                 serverNodes.add(resultSet.getString("UM_SERVER_NODE"));
             }
         } catch (SQLException e) {
-            throw new WSUserStoreException("Error occurred while persisting access token", e);
+            throw new WSUserStoreException("Error occurred while reading server node info for tenant " + tenant, e);
         } finally {
             IdentityDatabaseUtil.closeAllConnections(connection, resultSet, insertTokenPrepStmt);
         }
         return serverNodes;
     }
 
+    /**
+     * Get agent connections for particular tenant and user store
+     * @param tenantDomain
+     * @param domain
+     * @return List of connections
+     * @throws WSUserStoreException
+     */
     public List<AgentConnection> getAgentConnections(String tenantDomain, String domain) throws WSUserStoreException {
         Connection connection = DatabaseUtil.getInstance().getDBConnection();
         PreparedStatement insertTokenPrepStmt = null;
@@ -114,13 +135,21 @@ public class TokenMgtDao {
                 agentConnections.add(agentConnection);
             }
         } catch (SQLException e) {
-            throw new WSUserStoreException("Error occurred reading data", e);
+            throw new WSUserStoreException("Error occurred while reading agent connection for tenant " + tenantDomain,
+                    e);
         } finally {
             IdentityDatabaseUtil.closeAllConnections(connection, resultSet, insertTokenPrepStmt);
         }
         return agentConnections;
     }
 
+    /**
+     * Delete agent connections
+     * @param tenantDomain
+     * @param domain
+     * @return result of the delete operation
+     * @throws WSUserStoreException
+     */
     public boolean deleteConnections(String tenantDomain, String domain) throws WSUserStoreException {
 
         Connection connection = DatabaseUtil.getInstance().getDBConnection();
@@ -133,13 +162,20 @@ public class TokenMgtDao {
             connection.commit();
             return true;
         } catch (SQLException e) {
-            throw new WSUserStoreException("Error occurred while deleting access for domain : " + domain,
-                    e);
+            throw new WSUserStoreException("Error occurred while deleting agent connection for tenant : " + domain, e);
         } finally {
             IdentityDatabaseUtil.closeAllConnections(connection, null, insertTokenPrepStmt);
         }
     }
 
+    /**
+     * Update agent connection status
+     * @param tenantDomain
+     * @param domain
+     * @param status
+     * @return Result of the update operation
+     * @throws WSUserStoreException
+     */
     public boolean updateConnectionStatus(String tenantDomain, String domain, String status)
             throws WSUserStoreException {
 
@@ -154,13 +190,21 @@ public class TokenMgtDao {
             connection.commit();
             return true;
         } catch (SQLException e) {
-            throw new WSUserStoreException("Error occurred while deleting access for domain : " + domain,
+            throw new WSUserStoreException("Error occurred while updating connection status for tenant " + tenantDomain,
                     e);
         } finally {
             IdentityDatabaseUtil.closeAllConnections(connection, null, insertTokenPrepStmt);
         }
     }
 
+    /**
+     * Update access token
+     * @param oldToken
+     * @param newToken
+     * @param domain
+     * @return result of the update operation
+     * @throws WSUserStoreException
+     */
     public boolean updateAccessToken(String oldToken, String newToken, String domain) throws WSUserStoreException {
 
         Connection connection = DatabaseUtil.getInstance().getDBConnection();
@@ -174,8 +218,7 @@ public class TokenMgtDao {
             connection.commit();
             return true;
         } catch (SQLException e) {
-            throw new WSUserStoreException("Error occurred while updating access for domain : " + domain,
-                    e);
+            throw new WSUserStoreException("Error occurred while updating access for domain : " + domain, e);
         } finally {
             IdentityDatabaseUtil.closeAllConnections(connection, null, insertTokenPrepStmt);
         }

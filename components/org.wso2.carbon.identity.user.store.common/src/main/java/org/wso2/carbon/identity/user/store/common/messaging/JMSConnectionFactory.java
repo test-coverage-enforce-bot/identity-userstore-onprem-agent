@@ -35,6 +35,11 @@ public class JMSConnectionFactory {
     private ActiveMQConnectionFactory connectionFactory;
     private boolean transactedSession = false;
 
+    /**
+     * Create connection factory
+     * @param messageBrokerURL message broker URL
+     * @return
+     */
     public ActiveMQConnectionFactory createActiveMQConnectionFactory(String messageBrokerURL) {
         if (null != this.connectionFactory) {
             return this.connectionFactory;
@@ -44,6 +49,11 @@ public class JMSConnectionFactory {
         return this.connectionFactory;
     }
 
+    /**
+     * Create connection
+     * @return JMS connection
+     * @throws JMSConnectionException
+     */
     public Connection createConnection() throws JMSConnectionException {
         if (null == connectionFactory) {
             throw new JMSConnectionException(
@@ -99,6 +109,13 @@ public class JMSConnectionFactory {
         }
     }
 
+    /**
+     * Create message producer
+     * @param session JMS Session
+     * @param destination Destination queue or topic
+     * @return
+     * @throws JMSConnectionException
+     */
     public MessageProducer createMessageProducer(Session session, Destination destination)
             throws JMSConnectionException {
         try {
@@ -108,6 +125,14 @@ public class JMSConnectionFactory {
         }
     }
 
+    /**
+     * Create message producer
+     * @param session JMS Session
+     * @param destination Destination queue or topic
+     * @param deliveryMode delivery mode
+     * @return
+     * @throws JMSConnectionException
+     */
     public MessageProducer createMessageProducer(Session session, Destination destination, int deliveryMode)
             throws JMSConnectionException {
         MessageProducer producer;

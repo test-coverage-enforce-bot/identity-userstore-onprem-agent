@@ -43,10 +43,19 @@ import javax.jms.MessageProducer;
 import javax.jms.ObjectMessage;
 import javax.jms.Session;
 
+/**
+ * Token management admin service
+ */
 public class TokenMgtService extends AbstractAdmin {
 
     private static Log LOGGER = LogFactory.getLog(TokenMgtService.class);
 
+    /**
+     * Insert access token
+     * @param domain
+     * @param token
+     * @return
+     */
     public boolean insertAccessToken(String domain, String token) {
 
         String tenantDomain = CarbonContext.getThreadLocalCarbonContext().getTenantDomain();
@@ -55,15 +64,20 @@ public class TokenMgtService extends AbstractAdmin {
         accessToken.setAccessToken(token);
         accessToken.setTenant(tenantDomain);
         accessToken.setDomain(domain);
-        accessToken.setStatus("A"); //TODO constant
+        accessToken.setStatus(UserStoreConstants.ACCESS_TOKEN_STATUS_ACTIVE);
         try {
             return tokenMgtDao.insertAccessToken(accessToken);
         } catch (WSUserStoreException e) {
-            LOGGER.error("Error occurred while inserting token", e);
+            LOGGER.error("Error occurred while inserting token for domain " + domain, e);
         }
         return false;
     }
 
+    /**
+     * Delete access token
+     * @param domain
+     * @return
+     */
     public boolean deleteAccessToken(String domain) {
 
         String tenantDomain = CarbonContext.getThreadLocalCarbonContext().getTenantDomain();
@@ -71,30 +85,38 @@ public class TokenMgtService extends AbstractAdmin {
         try {
             return tokenMgtDao.deleteAccessToken(tenantDomain, domain);
         } catch (WSUserStoreException e) {
-            LOGGER.error("Error occurred while inserting token", e);
+            LOGGER.error("Error occurred while deleting token for domain " + domain, e);
         }
         return false;
     }
 
+    /**
+     * Update access token
+     * @param oldToken
+     * @param newToken
+     * @param domain
+     * @return
+     */
     public boolean updateAccessToken(String oldToken, String newToken, String domain) {
 
         String tenantDomain = CarbonContext.getThreadLocalCarbonContext().getTenantDomain();
         killAgentConnections(tenantDomain, domain);
         TokenMgtDao tokenMgtDao = new TokenMgtDao();
         try {
-            tokenMgtDao.updateConnectionStatus(tenantDomain, domain, "F");
+            tokenMgtDao.updateConnectionStatus(tenantDomain, domain,
+                    UserStoreConstants.CLIENT_CONNECTION_STATUS_CONNECTION_FAILED);
             return tokenMgtDao.updateAccessToken(oldToken, newToken, domain);
         } catch (WSUserStoreException e) {
-            LOGGER.error("Error occurred while updating token", e);
+            LOGGER.error("Error occurred while updating token for domain " + domain, e);
         }
         return true;
     }
 
-    public boolean validateAccessToken(String token) {
-
-        return true;
-    }
-
+    /**
+     * Get all agent connections for user store domain
+     * @param domain
+     * @return
+     */
     public List<AgentConnection> getAgentConnections(String domain) {
 
         String tenantDomain = CarbonContext.getThreadLocalCarbonContext().getTenantDomain();
@@ -102,11 +124,16 @@ public class TokenMgtService extends AbstractAdmin {
         try {
             return tokenMgtDao.getAgentConnections(tenantDomain, domain);
         } catch (WSUserStoreException e) {
-            LOGGER.error("Error occurred while inserting token", e);
+            LOGGER.error("Error occurred while getting agent connections for domain " + domain, e);
         }
         return Collections.emptyList();
     }
 
+    /**
+     * Delete agent connections
+     * @param domain
+     * @return
+     */
     public boolean deleteConnections(String domain) {
 
         String tenantDomain = CarbonContext.getThreadLocalCarbonContext().getTenantDomain();
@@ -115,11 +142,16 @@ public class TokenMgtService extends AbstractAdmin {
         try {
             return tokenMgtDao.deleteConnections(tenantDomain, domain);
         } catch (WSUserStoreException e) {
-            LOGGER.error("Error occurred while inserting token", e);
+            LOGGER.error("Error occurred while deleting agent connections for domain " + domain, e);
         }
         return false;
     }
 
+    /**
+     * Send a server operation message to kill already connected agent connections
+     * @param tenantDomain
+     * @param domain
+     */
     private void killAgentConnections(String tenantDomain, String domain) {
 
         String messageBrokerURL = null;
@@ -171,6 +203,17 @@ public class TokenMgtService extends AbstractAdmin {
         }
     }
 
+    /**
+     * Send server operation message to queue
+     * @param operationType
+     * @param domain
+     * @param tenantDomain
+     * @param requestSession
+     * @param producer
+     * @param responseQueue
+     * @throws JMSException
+     * @throws WSUserStoreException
+     */
     private void addNextServerOperation(String operationType, String domain, String tenantDomain,
             Session requestSession, MessageProducer producer, Destination responseQueue)
             throws JMSException, WSUserStoreException {
@@ -186,7 +229,7 @@ public class TokenMgtService extends AbstractAdmin {
             requestMessage.setObject(requestOperation);
             requestMessage.setJMSExpiration(UserStoreConstants.QUEUE_MESSAGE_LIFETIME);
 
-            requestMessage.setStringProperty("serverNode", serverNode);
+            requestMessage.setStringProperty(UserStoreConstants.UM_MESSAGE_SELECTOR_SERVER_NODE, serverNode);
             requestMessage.setJMSReplyTo(responseQueue);
             producer.send(requestMessage);
         }

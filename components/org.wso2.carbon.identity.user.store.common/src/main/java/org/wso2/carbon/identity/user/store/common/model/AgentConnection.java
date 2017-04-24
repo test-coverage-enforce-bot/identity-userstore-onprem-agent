@@ -20,7 +20,7 @@ package org.wso2.carbon.identity.user.store.common.model;
 import java.io.Serializable;
 
 /**
- * Agent connection
+ * Agent connection model
  */
 public class AgentConnection implements Serializable {
 

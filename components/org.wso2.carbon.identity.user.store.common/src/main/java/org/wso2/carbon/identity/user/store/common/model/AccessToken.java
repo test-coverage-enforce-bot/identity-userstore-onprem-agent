@@ -17,6 +17,9 @@
  */
 package org.wso2.carbon.identity.user.store.common.model;
 
+/**
+ * Access token model
+ */
 public class AccessToken {
 
     private int id;

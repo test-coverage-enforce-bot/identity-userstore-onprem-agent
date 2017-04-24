@@ -17,6 +17,9 @@
 */
 package org.wso2.carbon.identity.user.store.common;
 
+/**
+ * User store constants
+ */
 public class UserStoreConstants {
 
     public final static String UM_OPERATION_TYPE_AUTHENTICATE = "authenticate";
@@ -29,7 +32,13 @@ public class UserStoreConstants {
 
     public final static String UM_OPERATION_AUTHENTICATE_RESULT_SUCCESS = "SUCCESS";
 
+    public static final String CLIENT_CONNECTION_STATUS_CONNECTED = "C";
+    public static final String CLIENT_CONNECTION_STATUS_CONNECTION_FAILED = "F";
+
+    public static final String ACCESS_TOKEN_STATUS_ACTIVE = "A";
+
     public final static int UM_MESSAGE_CONSUMER_RECEIVE_TIMEOUT = 6000;
+    public final static String UM_MESSAGE_SELECTOR_SERVER_NODE = "serverNode";
 
     public final static String QUEUE_NAME_REQUEST = "requestQueue";
     public final static String QUEUE_NAME_RESPONSE = "responseQueue";

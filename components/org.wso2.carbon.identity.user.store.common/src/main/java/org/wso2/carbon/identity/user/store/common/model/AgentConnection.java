@@ -25,6 +25,7 @@ import java.io.Serializable;
 public class AgentConnection implements Serializable {
 
     private String accessToken;
+    private int accessTokenId;
     private String node;
     private String status;
     private String serverNode;
@@ -59,5 +60,13 @@ public class AgentConnection implements Serializable {
 
     public void setServerNode(String serverNode) {
         this.serverNode = serverNode;
+    }
+
+    public int getAccessTokenId() {
+        return accessTokenId;
+    }
+
+    public void setAccessTokenId(int accessTokenId) {
+        this.accessTokenId = accessTokenId;
     }
 }

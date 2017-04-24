@@ -29,6 +29,7 @@ import org.wso2.carbon.identity.user.store.common.messaging.JMSConnectionFactory
 import org.wso2.carbon.identity.user.store.outbound.cache.UserAttributeCache;
 import org.wso2.carbon.identity.user.store.outbound.cache.UserAttributeCacheEntry;
 import org.wso2.carbon.identity.user.store.outbound.cache.UserAttributeCacheKey;
+import org.wso2.carbon.identity.user.store.outbound.dao.AgentConnectionMgtDao;
 import org.wso2.carbon.identity.user.store.outbound.dao.TokenMgtDao;
 import org.wso2.carbon.identity.user.store.outbound.exception.WSUserStoreException;
 import org.wso2.carbon.identity.user.store.common.model.UserOperation;
@@ -244,8 +245,8 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
      * @throws WSUserStoreException
      */
     private String getServerNode(String tenantDomain) throws WSUserStoreException {
-        TokenMgtDao tokenMgtDao = new TokenMgtDao();
-        List<String> serverNodes = tokenMgtDao.getServerNodes(tenantDomain);
+        AgentConnectionMgtDao agentConnectionMgtDao = new AgentConnectionMgtDao();
+        List<String> serverNodes = agentConnectionMgtDao.getServerNodes(tenantDomain);
         if (serverNodes.isEmpty()) {
             throw new WSUserStoreException("No server connections to send message for " + tenantDomain);
         } else {

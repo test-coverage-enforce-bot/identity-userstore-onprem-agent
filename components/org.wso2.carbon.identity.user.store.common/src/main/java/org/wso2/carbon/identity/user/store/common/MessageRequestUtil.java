@@ -15,7 +15,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.wso2.carbon.identity.user.store.outbound.util;
+package org.wso2.carbon.identity.user.store.common;
+
+import org.wso2.carbon.identity.user.store.common.model.UserOperation;
 
 /**
  * Message request utility to create user operation message which send to queue
@@ -32,5 +34,12 @@ public class MessageRequestUtil {
 
     public static String doGetExternalRoleListOfUserRequestData(String username) {
         return String.format("{username : '%s'}", username);
+    }
+
+    public static String getUserOperationJSONMessage(UserOperation userOperation) {
+        return String
+                .format("{correlationId : '%s', requestType : '%s', requestData : %s}",
+                        userOperation.getCorrelationId(),
+                        userOperation.getRequestType(), userOperation.getRequestData());
     }
 }

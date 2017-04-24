@@ -24,6 +24,7 @@ import org.wso2.carbon.core.AbstractAdmin;
 import org.wso2.carbon.identity.user.store.common.UserStoreConstants;
 import org.wso2.carbon.identity.user.store.common.messaging.JMSConnectionException;
 import org.wso2.carbon.identity.user.store.common.messaging.JMSConnectionFactory;
+import org.wso2.carbon.identity.user.store.outbound.dao.AgentConnectionMgtDao;
 import org.wso2.carbon.identity.user.store.outbound.dao.TokenMgtDao;
 import org.wso2.carbon.identity.user.store.outbound.exception.WSUserStoreException;
 import org.wso2.carbon.identity.user.store.common.model.AccessToken;
@@ -102,8 +103,9 @@ public class TokenMgtService extends AbstractAdmin {
         String tenantDomain = CarbonContext.getThreadLocalCarbonContext().getTenantDomain();
         killAgentConnections(tenantDomain, domain);
         TokenMgtDao tokenMgtDao = new TokenMgtDao();
+        AgentConnectionMgtDao agentConnectionMgtDao = new AgentConnectionMgtDao();
         try {
-            tokenMgtDao.updateConnectionStatus(tenantDomain, domain,
+            agentConnectionMgtDao.updateConnectionStatus(tenantDomain, domain,
                     UserStoreConstants.CLIENT_CONNECTION_STATUS_CONNECTION_FAILED);
             return tokenMgtDao.updateAccessToken(oldToken, newToken, domain);
         } catch (WSUserStoreException e) {
@@ -120,9 +122,9 @@ public class TokenMgtService extends AbstractAdmin {
     public List<AgentConnection> getAgentConnections(String domain) {
 
         String tenantDomain = CarbonContext.getThreadLocalCarbonContext().getTenantDomain();
-        TokenMgtDao tokenMgtDao = new TokenMgtDao();
+        AgentConnectionMgtDao agentConnectionMgtDao = new AgentConnectionMgtDao();
         try {
-            return tokenMgtDao.getAgentConnections(tenantDomain, domain);
+            return agentConnectionMgtDao.getAgentConnections(tenantDomain, domain);
         } catch (WSUserStoreException e) {
             LOGGER.error("Error occurred while getting agent connections for domain " + domain, e);
         }
@@ -138,9 +140,9 @@ public class TokenMgtService extends AbstractAdmin {
 
         String tenantDomain = CarbonContext.getThreadLocalCarbonContext().getTenantDomain();
         killAgentConnections(tenantDomain, domain);
-        TokenMgtDao tokenMgtDao = new TokenMgtDao();
+        AgentConnectionMgtDao agentConnectionMgtDao = new AgentConnectionMgtDao();
         try {
-            return tokenMgtDao.deleteConnections(tenantDomain, domain);
+            return agentConnectionMgtDao.deleteConnections(tenantDomain, domain);
         } catch (WSUserStoreException e) {
             LOGGER.error("Error occurred while deleting agent connections for domain " + domain, e);
         }
@@ -218,8 +220,8 @@ public class TokenMgtService extends AbstractAdmin {
             Session requestSession, MessageProducer producer, Destination responseQueue)
             throws JMSException, WSUserStoreException {
 
-        TokenMgtDao tokenMgtDao = new TokenMgtDao();
-        List<String> serverNodes = tokenMgtDao.getServerNodes(tenantDomain);
+        AgentConnectionMgtDao AgentConnectionMgtDao = new AgentConnectionMgtDao();
+        List<String> serverNodes = AgentConnectionMgtDao.getServerNodes(tenantDomain);
         for (String serverNode : serverNodes) {
             ServerOperation requestOperation = new ServerOperation();
             requestOperation.setTenantDomain(tenantDomain);

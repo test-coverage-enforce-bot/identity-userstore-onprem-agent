@@ -32,7 +32,7 @@ import org.wso2.carbon.identity.user.store.outbound.cache.UserAttributeCacheKey;
 import org.wso2.carbon.identity.user.store.outbound.dao.TokenMgtDao;
 import org.wso2.carbon.identity.user.store.outbound.exception.WSUserStoreException;
 import org.wso2.carbon.identity.user.store.common.model.UserOperation;
-import org.wso2.carbon.identity.user.store.outbound.util.MessageRequestUtil;
+import org.wso2.carbon.identity.user.store.common.MessageRequestUtil;
 import org.wso2.carbon.user.api.ClaimMapping;
 import org.wso2.carbon.user.api.Properties;
 import org.wso2.carbon.user.api.Property;

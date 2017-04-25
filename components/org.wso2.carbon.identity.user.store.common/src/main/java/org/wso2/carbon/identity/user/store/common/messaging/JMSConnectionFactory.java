@@ -165,6 +165,25 @@ public class JMSConnectionFactory {
     }
 
     /**
+     * To create the topic destination.
+     *
+     * @param session         relevant session to create the destination
+     * @param destinationName Destination jms destination
+     * @return the destination that is created from session
+     * @throws JMSConnectionException Thrown when looking up destination
+     */
+    public Destination createTopicDestination(Session session, String destinationName) throws JMSConnectionException {
+        Destination destination = null;
+        try {
+            destination = session.createTopic(destinationName);
+        } catch (JMSException e) {
+            throw new JMSConnectionException("Error occurred while creating topic destination", e);
+        }
+
+        return destination;
+    }
+
+    /**
      * To get a session with the given connection.
      *
      * @param connection Connection that is needed to create the session

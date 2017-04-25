@@ -67,6 +67,7 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.ObjectMessage;
 import javax.jms.Session;
+import javax.jms.Topic;
 
 /**
  * Outbound Agent User store manager
@@ -194,7 +195,7 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
             connectionFactory.start(connection);
             requestSession = connectionFactory.createSession(connection);
             requestQueue = connectionFactory
-                    .createQueueDestination(requestSession, UserStoreConstants.QUEUE_NAME_REQUEST);
+                    .createTopicDestination(requestSession, UserStoreConstants.QUEUE_NAME_REQUEST);
             producer = connectionFactory
                     .createMessageProducer(requestSession, requestQueue, DeliveryMode.NON_PERSISTENT);
 
@@ -285,8 +286,8 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
         requestMessage.setObject(requestOperation);
         requestMessage.setJMSCorrelationID(correlationId);
         requestMessage.setJMSExpiration(UserStoreConstants.QUEUE_MESSAGE_LIFETIME);
-        requestMessage.setStringProperty(UserStoreConstants.UM_MESSAGE_SELECTOR_SERVER_NODE,
-                getServerNode(tenantDomain));
+//        requestMessage.setStringProperty(UserStoreConstants.UM_MESSAGE_SELECTOR_SERVER_NODE,
+//                getServerNode(tenantDomain));
         requestMessage.setJMSReplyTo(responseQueue);
         producer.send(requestMessage);
     }
@@ -392,7 +393,7 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
                 connectionFactory.start(connection);
                 requestSession = connectionFactory.createSession(connection);
                 requestQueue = connectionFactory
-                        .createQueueDestination(requestSession, UserStoreConstants.QUEUE_NAME_REQUEST);
+                        .createTopicDestination(requestSession, UserStoreConstants.QUEUE_NAME_REQUEST);
                 producer = connectionFactory
                         .createMessageProducer(requestSession, requestQueue, DeliveryMode.NON_PERSISTENT);
 
@@ -638,7 +639,7 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
             connectionFactory.start(connection);
             requestSession = connectionFactory.createSession(connection);
             requestQueue = connectionFactory
-                    .createQueueDestination(requestSession, UserStoreConstants.QUEUE_NAME_REQUEST);
+                    .createTopicDestination(requestSession, UserStoreConstants.QUEUE_NAME_REQUEST);
             producer = connectionFactory
                     .createMessageProducer(requestSession, requestQueue, DeliveryMode.NON_PERSISTENT);
 
@@ -730,7 +731,7 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
             connectionFactory.start(connection);
             requestSession = connectionFactory.createSession(connection);
             requestQueue = connectionFactory
-                    .createQueueDestination(requestSession, UserStoreConstants.QUEUE_NAME_REQUEST);
+                    .createTopicDestination(requestSession, UserStoreConstants.QUEUE_NAME_REQUEST);
             producer = connectionFactory
                     .createMessageProducer(requestSession, requestQueue, DeliveryMode.NON_PERSISTENT);
 

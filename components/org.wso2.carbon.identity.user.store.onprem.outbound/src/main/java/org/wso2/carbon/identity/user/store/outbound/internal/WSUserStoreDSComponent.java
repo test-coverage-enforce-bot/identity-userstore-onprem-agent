@@ -45,7 +45,7 @@ public class WSUserStoreDSComponent {
         try {
 
             UserStoreManager remoteStoreManager = new WSOutboundUserStoreManager();
-            DatabaseUtil.getInstance(); //TODO have to think how to initilize datasource
+            DatabaseUtil.getInstance();
             ctxt.getBundleContext().registerService(UserStoreManager.class.getName(),
                     remoteStoreManager, null);
 

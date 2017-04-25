@@ -68,7 +68,6 @@
         <dependency>
             <groupId>com.googlecode.json-simple.wso2</groupId>
             <artifactId>json-simple</artifactId>
-            <version>${orbit.version.json-simple}</version>
         </dependency>
 
         <dependency>

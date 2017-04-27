@@ -28,6 +28,10 @@ public class MessageRequestUtil {
         return String.format("{username : '%s', password : '%s'}", userName, credential);
     }
 
+    public static String getRoleListRequest(String filter, int limit) {
+        return String.format("{filter : '%s', limit : '%s'}", filter, limit);
+    }
+
     public static String getUserPropertyValuesRequestData(String username, String attributes) {
         return String.format("{username : '%s', attributes : '%s'}", username, attributes);
     }

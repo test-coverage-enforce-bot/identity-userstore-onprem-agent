@@ -37,13 +37,14 @@ public class UserStoreConstants {
 
     public static final String ACCESS_TOKEN_STATUS_ACTIVE = "A";
 
-    public final static int UM_MESSAGE_CONSUMER_RECEIVE_TIMEOUT = 6000;
     public final static String UM_MESSAGE_SELECTOR_SERVER_NODE = "serverNode";
 
     public final static String QUEUE_NAME_REQUEST = "requestQueue";
     public final static String QUEUE_NAME_RESPONSE = "responseQueue";
-    public final static String MESSAGE_BROKER_ENDPOINT = "MessageBrokerEndPointURL";
-    public final static String DIRECTORY_NAME = "DirectoryName";
-    public final static long QUEUE_MESSAGE_LIFETIME = 5 * 60 * 1000;
-    public final static int MESSAGE_RETRY_LIMIT = 3;
+    public final static String USER_STORE_PROPERTY_NAME_MESSAGE_BROKER_ENDPOINT = "MessageBrokerEndPointURL";
+    public final static String USER_STORE_PROPERTY_NAME_MESSAGE_CONSUME_TIMEOUT = "MessageConsumeTimeout";
+    public final static String USER_STORE_PROPERTY_NAME_MESSAGE_LIFETIME = "MessageLifetime";
+    public final static String USER_STORE_PROPERTY_NAME_MESSAGE_RETRY_LIMIT = "MessageRetryLimit";
+    public final static String USER_STORE_PROPERTY_NAME_DIRECTORY_NAME = "DirectoryName";
+    public final static long QUEUE_SERVER_MESSAGE_LIFETIME = 5 * 60 * 1000;
 }

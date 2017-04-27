@@ -23,17 +23,16 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
+import org.wso2.carbon.identity.user.store.common.MessageRequestUtil;
 import org.wso2.carbon.identity.user.store.common.UserStoreConstants;
 import org.wso2.carbon.identity.user.store.common.messaging.JMSConnectionException;
 import org.wso2.carbon.identity.user.store.common.messaging.JMSConnectionFactory;
+import org.wso2.carbon.identity.user.store.common.model.UserOperation;
 import org.wso2.carbon.identity.user.store.outbound.cache.UserAttributeCache;
 import org.wso2.carbon.identity.user.store.outbound.cache.UserAttributeCacheEntry;
 import org.wso2.carbon.identity.user.store.outbound.cache.UserAttributeCacheKey;
 import org.wso2.carbon.identity.user.store.outbound.dao.AgentConnectionMgtDao;
-import org.wso2.carbon.identity.user.store.outbound.dao.TokenMgtDao;
 import org.wso2.carbon.identity.user.store.outbound.exception.WSUserStoreException;
-import org.wso2.carbon.identity.user.store.common.model.UserOperation;
-import org.wso2.carbon.identity.user.store.common.MessageRequestUtil;
 import org.wso2.carbon.user.api.ClaimMapping;
 import org.wso2.carbon.user.api.Properties;
 import org.wso2.carbon.user.api.Property;
@@ -67,7 +66,6 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.ObjectMessage;
 import javax.jms.Session;
-import javax.jms.Topic;
 
 /**
  * Outbound Agent User store manager
@@ -201,7 +199,7 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
 
             Message responseMessage = null;
             int retryCount = 0;
-            while (responseMessage == null && UserStoreConstants.MESSAGE_RETRY_LIMIT > retryCount) {
+            while (responseMessage == null && getMessageRetryLimit() > retryCount) {
                 String correlationId = UUID.randomUUID().toString();
                 responseQueue = connectionFactory
                         .createQueueDestination(requestSession, UserStoreConstants.QUEUE_NAME_RESPONSE);
@@ -214,7 +212,7 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
 
                 String filter = String.format("JMSCorrelationID='%s'", correlationId);
                 MessageConsumer consumer = responseSession.createConsumer(responseQueue, filter);
-                responseMessage = consumer.receive(UserStoreConstants.UM_MESSAGE_CONSUMER_RECEIVE_TIMEOUT);
+                responseMessage = consumer.receive(getMessageConsumeTimeout());
                 retryCount++;
             }
             if (responseMessage != null) {
@@ -285,9 +283,7 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
         ObjectMessage requestMessage = requestSession.createObjectMessage();
         requestMessage.setObject(requestOperation);
         requestMessage.setJMSCorrelationID(correlationId);
-        requestMessage.setJMSExpiration(UserStoreConstants.QUEUE_MESSAGE_LIFETIME);
-//        requestMessage.setStringProperty(UserStoreConstants.UM_MESSAGE_SELECTOR_SERVER_NODE,
-//                getServerNode(tenantDomain));
+        requestMessage.setJMSExpiration(getMessageLifeTime());
         requestMessage.setJMSReplyTo(responseQueue);
         producer.send(requestMessage);
     }
@@ -401,7 +397,7 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
                 int retryCount = 0;
                 Message responseMessage = null;
 
-                while (responseMessage == null && UserStoreConstants.MESSAGE_RETRY_LIMIT > retryCount) {
+                while (responseMessage == null && getMessageRetryLimit() > retryCount) {
                     String correlationId = UUID.randomUUID().toString();
                     responseQueue = connectionFactory
                             .createQueueDestination(requestSession, UserStoreConstants.QUEUE_NAME_RESPONSE);
@@ -415,7 +411,7 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
 
                     String filter = String.format("JMSCorrelationID='%s'", correlationId);
                     MessageConsumer consumer = responseSession.createConsumer(responseQueue, filter);
-                    responseMessage = consumer.receive(UserStoreConstants.UM_MESSAGE_CONSUMER_RECEIVE_TIMEOUT);
+                    responseMessage = consumer.receive(getMessageConsumeTimeout());
                     UserOperation response = (UserOperation) ((ObjectMessage) responseMessage).getObject();
 
                     JSONObject resultObj = new JSONObject(response.getResponseData());
@@ -558,17 +554,43 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
     }
 
     private String getMessageBrokerURL() {
-        return this.realmConfig.getUserStoreProperty(UserStoreConstants.MESSAGE_BROKER_ENDPOINT);
+        return this.realmConfig
+                .getUserStoreProperty(UserStoreConstants.USER_STORE_PROPERTY_NAME_MESSAGE_BROKER_ENDPOINT);
+    }
+
+    private int getMessageRetryLimit() {
+        return Integer.parseInt(
+                this.realmConfig.getUserStoreProperty(UserStoreConstants.USER_STORE_PROPERTY_NAME_MESSAGE_RETRY_LIMIT));
+    }
+
+    private int getMessageLifeTime() {
+        return Integer.parseInt(
+                this.realmConfig.getUserStoreProperty(UserStoreConstants.USER_STORE_PROPERTY_NAME_MESSAGE_LIFETIME));
+    }
+
+    private int getMessageConsumeTimeout() {
+        return Integer.parseInt(
+                this.realmConfig.getUserStoreProperty(UserStoreConstants.USER_STORE_PROPERTY_NAME_MESSAGE_CONSUME_TIMEOUT));
     }
 
     public Properties getDefaultUserStoreProperties() {
 
         Properties properties = new Properties();
-        Property endpoint = new Property(UserStoreConstants.MESSAGE_BROKER_ENDPOINT, "", "Message Broker connection URL", null);
-        Property directoryName = new Property(UserStoreConstants.DIRECTORY_NAME, "", "Directory Name", null);
+        Property brokerUrl = new Property(UserStoreConstants.USER_STORE_PROPERTY_NAME_MESSAGE_BROKER_ENDPOINT, "",
+                "Message Broker connection URL", null);
+        Property directoryName = new Property(UserStoreConstants.USER_STORE_PROPERTY_NAME_DIRECTORY_NAME, "", "Directory Name", null);
+        Property messageConsumeTimeout = new Property(
+                UserStoreConstants.USER_STORE_PROPERTY_NAME_MESSAGE_CONSUME_TIMEOUT, "", "Message consume timeout",
+                null);
+        Property messageLifetime = new Property(UserStoreConstants.USER_STORE_PROPERTY_NAME_MESSAGE_LIFETIME, "",
+                "Message lifetime", null);
+        Property messageRetryLimit = new Property(UserStoreConstants.USER_STORE_PROPERTY_NAME_MESSAGE_RETRY_LIMIT, "",
+                "Message retry limit", null);
+
         Property disabled = new Property("Disabled", "false", "Disabled#Check to disable the user store", null);
 
-        Property[] mandatoryProperties = new Property[] { endpoint, directoryName };
+        Property[] mandatoryProperties = new Property[] { brokerUrl, directoryName, messageConsumeTimeout,
+                messageLifetime, messageRetryLimit };
         Property[] optionalProperties = new Property[] { disabled };
 
         properties.setOptionalProperties(optionalProperties);
@@ -646,7 +668,7 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
             int retryCount = 0;
             Message responseMessage = null;
 
-            while (responseMessage == null && UserStoreConstants.MESSAGE_RETRY_LIMIT > retryCount) {
+            while (responseMessage == null && getMessageRetryLimit() > retryCount) {
                 String correlationId = UUID.randomUUID().toString();
                 responseQueue = connectionFactory
                         .createQueueDestination(requestSession, UserStoreConstants.QUEUE_NAME_RESPONSE);
@@ -659,7 +681,7 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
 
                 String selector = String.format("JMSCorrelationID='%s'", correlationId);
                 MessageConsumer consumer = responseSession.createConsumer(responseQueue, selector);
-                responseMessage = consumer.receive(UserStoreConstants.UM_MESSAGE_CONSUMER_RECEIVE_TIMEOUT);
+                responseMessage = consumer.receive(getMessageConsumeTimeout());
                 UserOperation response = (UserOperation) ((ObjectMessage) responseMessage).getObject();
 
                 JSONObject resultObj = new JSONObject(response.getResponseData());
@@ -738,18 +760,20 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
             int retryCount = 0;
             Message responseMessage = null;
 
-            while (responseMessage == null && UserStoreConstants.MESSAGE_RETRY_LIMIT > retryCount) {
+            while (responseMessage == null && getMessageRetryLimit() > retryCount) {
 
                 String correlationId = UUID.randomUUID().toString();
                 responseQueue = connectionFactory
                         .createQueueDestination(requestSession, UserStoreConstants.QUEUE_NAME_RESPONSE);
-                addNextUserOperation(correlationId, UserStoreConstants.UM_OPERATION_TYPE_GET_ROLES, "", requestSession,
+                addNextUserOperation(correlationId, UserStoreConstants.UM_OPERATION_TYPE_GET_ROLES,
+                        MessageRequestUtil.getRoleListRequest(
+                                filter, maxItemLimit), requestSession,
                         producer, responseQueue);
                 responseSession = connectionFactory.createSession(connection);
 
                 String selector = String.format("JMSCorrelationID='%s'", correlationId);
                 MessageConsumer consumer = responseSession.createConsumer(responseQueue, selector);
-                responseMessage = consumer.receive(UserStoreConstants.UM_MESSAGE_CONSUMER_RECEIVE_TIMEOUT);
+                responseMessage = consumer.receive(getMessageConsumeTimeout());
                 UserOperation response = (UserOperation) ((ObjectMessage) responseMessage).getObject();
 
                 JSONObject resultObj = new JSONObject(response.getResponseData());

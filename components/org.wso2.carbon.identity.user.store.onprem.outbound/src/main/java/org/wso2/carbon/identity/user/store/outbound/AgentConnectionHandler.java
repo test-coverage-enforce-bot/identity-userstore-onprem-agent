@@ -61,7 +61,7 @@ public class AgentConnectionHandler {
 
         if (secondaryRealmConfiguration != null) {
             Map<String, String> userStoreProperties = secondaryRealmConfiguration.getUserStoreProperties();
-            messageBrokerURL = userStoreProperties.get(UserStoreConstants.MESSAGE_BROKER_ENDPOINT);
+            messageBrokerURL = userStoreProperties.get(UserStoreConstants.USER_STORE_PROPERTY_NAME_MESSAGE_BROKER_ENDPOINT);
 
             JMSConnectionFactory connectionFactory = new JMSConnectionFactory();
             Connection connection = null;
@@ -75,7 +75,7 @@ public class AgentConnectionHandler {
                 connectionFactory.start(connection);
                 requestSession = connectionFactory.createSession(connection);
                 requestQueue = connectionFactory
-                        .createQueueDestination(requestSession, UserStoreConstants.QUEUE_NAME_REQUEST);
+                        .createTopicDestination(requestSession, UserStoreConstants.QUEUE_NAME_REQUEST);
                 producer = connectionFactory
                         .createMessageProducer(requestSession, requestQueue, DeliveryMode.NON_PERSISTENT);
                 responseQueue = connectionFactory
@@ -123,7 +123,7 @@ public class AgentConnectionHandler {
             requestOperation.setOperationType(operationType);
             ObjectMessage requestMessage = requestSession.createObjectMessage();
             requestMessage.setObject(requestOperation);
-            requestMessage.setJMSExpiration(UserStoreConstants.QUEUE_MESSAGE_LIFETIME);
+            requestMessage.setJMSExpiration(UserStoreConstants.QUEUE_SERVER_MESSAGE_LIFETIME);
 
             requestMessage.setStringProperty(UserStoreConstants.UM_MESSAGE_SELECTOR_SERVER_NODE, serverNode);
             requestMessage.setJMSReplyTo(responseQueue);

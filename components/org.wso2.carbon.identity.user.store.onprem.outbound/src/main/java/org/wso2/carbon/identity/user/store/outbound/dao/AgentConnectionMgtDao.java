@@ -18,7 +18,6 @@
 package org.wso2.carbon.identity.user.store.outbound.dao;
 
 import org.wso2.carbon.identity.core.util.IdentityDatabaseUtil;
-import org.wso2.carbon.identity.user.store.common.UserStoreConstants;
 import org.wso2.carbon.identity.user.store.common.model.AgentConnection;
 import org.wso2.carbon.identity.user.store.outbound.exception.WSUserStoreException;
 import org.wso2.carbon.identity.user.store.outbound.util.DatabaseUtil;
@@ -31,33 +30,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AgentConnectionMgtDao {
-
-    /**
-     * Get available server node information for a tenant
-     * @param tenant
-     * @return List of server nodes
-     * @throws org.wso2.carbon.identity.user.store.outbound.exception.WSUserStoreException
-     */
-    public List<String> getServerNodes(String tenant) throws WSUserStoreException {
-        Connection connection = DatabaseUtil.getInstance().getDBConnection();
-        PreparedStatement insertTokenPrepStmt = null;
-        ResultSet resultSet = null;
-        List<String> serverNodes = new ArrayList<>();
-        try {
-            insertTokenPrepStmt = connection.prepareStatement(SQLQueries.NEXT_SERVER_NODE_GET);
-            insertTokenPrepStmt.setString(1, UserStoreConstants.CLIENT_CONNECTION_STATUS_CONNECTED);
-            insertTokenPrepStmt.setString(2, tenant);
-            resultSet = insertTokenPrepStmt.executeQuery();
-            while (resultSet.next()) {
-                serverNodes.add(resultSet.getString("UM_SERVER_NODE"));
-            }
-        } catch (SQLException e) {
-            throw new WSUserStoreException("Error occurred while reading server node info for tenant " + tenant, e);
-        } finally {
-            IdentityDatabaseUtil.closeAllConnections(connection, resultSet, insertTokenPrepStmt);
-        }
-        return serverNodes;
-    }
 
     /**
      * Get agent connections for particular tenant and user store
@@ -80,7 +52,6 @@ public class AgentConnectionMgtDao {
                 AgentConnection agentConnection = new AgentConnection();
                 agentConnection.setStatus(resultSet.getString("UM_STATUS"));
                 agentConnection.setNode(resultSet.getString("UM_NODE"));
-                agentConnection.setAccessToken(resultSet.getString("UM_TOKEN"));
                 agentConnections.add(agentConnection);
             }
         } catch (SQLException e) {

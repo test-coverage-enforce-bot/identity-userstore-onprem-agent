@@ -24,6 +24,7 @@ import java.io.Serializable;
  */
 public class UserOperation implements Serializable {
 
+    private static final long serialVersionUID = -5121089481197261423L;
     private String correlationId;
     private String requestType;
     private String requestData;

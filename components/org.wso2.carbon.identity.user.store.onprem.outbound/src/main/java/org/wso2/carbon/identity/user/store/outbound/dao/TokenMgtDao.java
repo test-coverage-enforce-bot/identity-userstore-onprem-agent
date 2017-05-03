@@ -24,9 +24,31 @@ import org.wso2.carbon.identity.user.store.outbound.util.DatabaseUtil;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class TokenMgtDao {
+
+    public String getAccessToken(String tenantDomain, String domain) throws WSUserStoreException {
+        Connection connection = DatabaseUtil.getInstance().getDBConnection();
+        PreparedStatement insertTokenPrepStmt = null;
+        ResultSet resultSet = null;
+        try {
+            insertTokenPrepStmt = connection.prepareStatement(SQLQueries.ACCESS_TOKEN_GET);
+            insertTokenPrepStmt.setString(1, tenantDomain);
+            insertTokenPrepStmt.setString(2, domain);
+            resultSet = insertTokenPrepStmt.executeQuery();
+            if (resultSet.next()) {
+                return resultSet.getString("UM_TOKEN");
+            }
+        } catch (SQLException e) {
+            throw new WSUserStoreException("Error occurred while reading agent connection for tenant " + tenantDomain,
+                    e);
+        } finally {
+            IdentityDatabaseUtil.closeAllConnections(connection, resultSet, insertTokenPrepStmt);
+        }
+        return null;
+    }
 
     /**
      * Inserting access token

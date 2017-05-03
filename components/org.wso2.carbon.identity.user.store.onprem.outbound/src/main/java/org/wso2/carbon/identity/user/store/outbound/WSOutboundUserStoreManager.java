@@ -31,7 +31,6 @@ import org.wso2.carbon.identity.user.store.common.model.UserOperation;
 import org.wso2.carbon.identity.user.store.outbound.cache.UserAttributeCache;
 import org.wso2.carbon.identity.user.store.outbound.cache.UserAttributeCacheEntry;
 import org.wso2.carbon.identity.user.store.outbound.cache.UserAttributeCacheKey;
-import org.wso2.carbon.identity.user.store.outbound.dao.AgentConnectionMgtDao;
 import org.wso2.carbon.identity.user.store.outbound.exception.WSUserStoreException;
 import org.wso2.carbon.user.api.ClaimMapping;
 import org.wso2.carbon.user.api.Properties;
@@ -55,7 +54,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.UUID;
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
@@ -73,7 +71,6 @@ import javax.jms.Session;
 public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
 
     private static Log LOGGER = LogFactory.getLog(WSOutboundUserStoreManager.class);
-
 
     public WSOutboundUserStoreManager() {
 
@@ -238,25 +235,6 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
     }
 
     /**
-     * Get server nodes which agents connected for a particular tenant domain
-     * @param tenantDomain
-     * @return
-     * @throws WSUserStoreException
-     */
-    private String getServerNode(String tenantDomain) throws WSUserStoreException {
-        AgentConnectionMgtDao agentConnectionMgtDao = new AgentConnectionMgtDao();
-        List<String> serverNodes = agentConnectionMgtDao.getServerNodes(tenantDomain);
-        if (serverNodes.isEmpty()) {
-            throw new WSUserStoreException("No server connections to send message for " + tenantDomain);
-        } else {
-            int size = serverNodes.size();
-            Random random = new Random();
-            int randIndex = Math.abs(random.nextInt()) % size;
-            return serverNodes.get(randIndex);
-        }
-    }
-
-    /**
      * Add next user operation to queue
      * @param correlationId
      * @param operationType
@@ -356,8 +334,6 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
 
     }
 
-
-
     private String getAllClaimMapAttributes(ClaimMapping[] claimMappings) {
 
         StringBuilder queryBuilder = new StringBuilder();
@@ -392,7 +368,6 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
                         .createTopicDestination(requestSession, UserStoreConstants.QUEUE_NAME_REQUEST);
                 producer = connectionFactory
                         .createMessageProducer(requestSession, requestQueue, DeliveryMode.NON_PERSISTENT);
-
 
                 int retryCount = 0;
                 Message responseMessage = null;
@@ -550,7 +525,7 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
 
     @Override
     public boolean isBulkImportSupported() {
-        return new Boolean(this.realmConfig.getUserStoreProperty("IsBulkImportSupported"));
+        return Boolean.valueOf(this.realmConfig.getUserStoreProperty("IsBulkImportSupported"));
     }
 
     private String getMessageBrokerURL() {
@@ -570,7 +545,8 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
 
     private int getMessageConsumeTimeout() {
         return Integer.parseInt(
-                this.realmConfig.getUserStoreProperty(UserStoreConstants.USER_STORE_PROPERTY_NAME_MESSAGE_CONSUME_TIMEOUT));
+                this.realmConfig
+                        .getUserStoreProperty(UserStoreConstants.USER_STORE_PROPERTY_NAME_MESSAGE_CONSUME_TIMEOUT));
     }
 
     public Properties getDefaultUserStoreProperties() {
@@ -578,7 +554,8 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
         Properties properties = new Properties();
         Property brokerUrl = new Property(UserStoreConstants.USER_STORE_PROPERTY_NAME_MESSAGE_BROKER_ENDPOINT, "",
                 "Message Broker connection URL", null);
-        Property directoryName = new Property(UserStoreConstants.USER_STORE_PROPERTY_NAME_DIRECTORY_NAME, "", "Directory Name", null);
+        Property directoryName = new Property(UserStoreConstants.USER_STORE_PROPERTY_NAME_DIRECTORY_NAME, "",
+                "Directory Name", null);
         Property messageConsumeTimeout = new Property(
                 UserStoreConstants.USER_STORE_PROPERTY_NAME_MESSAGE_CONSUME_TIMEOUT, "", "Message consume timeout",
                 null);
@@ -616,7 +593,75 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
     }
 
     public String[] doListUsers(String filter, int maxItemLimit) throws UserStoreException {
-        throw new UserStoreException("UserStoreManager method not supported : #doListUsers");
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Processing doListUsers request for tenantId  - [" + this.tenantId + "]");
+        }
+
+        JMSConnectionFactory connectionFactory = new JMSConnectionFactory();
+        Connection connection = null;
+        Session requestSession;
+        Session responseSession;
+        Destination requestQueue;
+        Destination responseQueue;
+        MessageProducer producer;
+        List<String> userList = new ArrayList<>();
+        try {
+            connectionFactory.createActiveMQConnectionFactory(getMessageBrokerURL());
+            connection = connectionFactory.createConnection();
+            connectionFactory.start(connection);
+            requestSession = connectionFactory.createSession(connection);
+            requestQueue = connectionFactory
+                    .createTopicDestination(requestSession, UserStoreConstants.QUEUE_NAME_REQUEST);
+            producer = connectionFactory
+                    .createMessageProducer(requestSession, requestQueue, DeliveryMode.NON_PERSISTENT);
+
+            int retryCount = 0;
+            Message responseMessage = null;
+
+            while (responseMessage == null && getMessageRetryLimit() > retryCount) {
+                String correlationId = UUID.randomUUID().toString();
+                responseQueue = connectionFactory
+                        .createQueueDestination(requestSession, UserStoreConstants.QUEUE_NAME_RESPONSE);
+
+                addNextUserOperation(correlationId, UserStoreConstants.UM_OPERATION_TYPE_GET_USER_LIST,
+                        MessageRequestUtil.getUserListRequest(
+                                filter, maxItemLimit), requestSession, producer, responseQueue);
+
+                responseSession = connectionFactory.createSession(connection);
+
+                String selector = String.format("JMSCorrelationID='%s'", correlationId);
+                MessageConsumer consumer = responseSession.createConsumer(responseQueue, selector);
+                responseMessage = consumer.receive(getMessageConsumeTimeout());
+                UserOperation response = (UserOperation) ((ObjectMessage) responseMessage).getObject();
+
+                JSONObject resultObj = new JSONObject(response.getResponseData());
+                JSONArray users = resultObj.getJSONArray("usernames");
+                for (int i = 0; i < users.length(); i++) {
+                    String user = (String) users.get(i);
+                    if (!"wso2.anonymous.user".equals(user)) {
+                        String domain = this.realmConfig.getUserStoreProperty("DomainName");
+                        user = UserCoreUtil.addDomainToName(user, domain);
+                    }
+                    userList.add(user);
+                }
+            }
+
+        } catch (JMSConnectionException e) {
+            LOGGER.error("Error occurred while adding message to queue", e);
+        } catch (JMSException e) {
+            LOGGER.error("Error occurred while adding message to queue", e);
+        } catch (JSONException e) {
+            LOGGER.error("Error occurred while reading JSON object", e);
+        } catch (WSUserStoreException e) {
+            LOGGER.error("Error occurred while reading JSON object", e);
+        } finally {
+            try {
+                connectionFactory.closeConnection(connection);
+            } catch (JMSConnectionException e) {
+                LOGGER.error("Error occurred while closing the connection", e);
+            }
+        }
+        return userList.toArray(new String[userList.size()]);
     }
 
     @Override
@@ -628,10 +673,7 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
     public boolean doCheckIsUserInRole(String userName, String roleName) throws UserStoreException {
         String[] roles = this.doGetExternalRoleListOfUser(userName, "*");
         if (roles != null) {
-            int len$ = roles.length;
-
-            for (int i$ = 0; i$ < len$; ++i$) {
-                String role = roles[i$];
+            for (String role : roles) {
                 if (role.equalsIgnoreCase(roleName)) {
                     return true;
                 }

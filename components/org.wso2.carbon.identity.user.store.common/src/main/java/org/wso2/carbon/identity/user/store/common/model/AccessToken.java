@@ -17,11 +17,14 @@
  */
 package org.wso2.carbon.identity.user.store.common.model;
 
+import java.io.Serializable;
+
 /**
  * Access token model
  */
-public class AccessToken {
+public class AccessToken implements Serializable {
 
+    private static final long serialVersionUID = 1628533152846479936L;
     private int id;
     private String accessToken;
     private String status;

@@ -32,6 +32,10 @@ public class MessageRequestUtil {
         return String.format("{filter : '%s', limit : '%s'}", filter, limit);
     }
 
+    public static String getUserListRequest(String filter, int limit) {
+        return String.format("{filter : '%s', limit : '%s'}", filter, limit);
+    }
+
     public static String getUserPropertyValuesRequestData(String username, String attributes) {
         return String.format("{username : '%s', attributes : '%s'}", username, attributes);
     }

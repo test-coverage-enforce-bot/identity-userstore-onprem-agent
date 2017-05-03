@@ -26,6 +26,7 @@ public class UserStoreConstants {
     public final static String UM_OPERATION_TYPE_GET_CLAIMS = "getclaims";
     public final static String UM_OPERATION_TYPE_GET_USER_ROLES = "getuserroles";
     public final static String UM_OPERATION_TYPE_GET_ROLES = "getroles";
+    public final static String UM_OPERATION_TYPE_GET_USER_LIST = "getuserlist";
     public final static String UM_OPERATION_TYPE_ERROR = "error";
 
     public final static String SERVER_OPERATION_TYPE_KILL_AGENTS = "killagents";
@@ -36,9 +37,6 @@ public class UserStoreConstants {
     public static final String CLIENT_CONNECTION_STATUS_CONNECTION_FAILED = "F";
 
     public static final String ACCESS_TOKEN_STATUS_ACTIVE = "A";
-
-    public final static String UM_MESSAGE_SELECTOR_SERVER_NODE = "serverNode";
-
     public final static String QUEUE_NAME_REQUEST = "requestQueue";
     public final static String QUEUE_NAME_RESPONSE = "responseQueue";
     public final static String USER_STORE_PROPERTY_NAME_MESSAGE_BROKER_ENDPOINT = "MessageBrokerEndPointURL";

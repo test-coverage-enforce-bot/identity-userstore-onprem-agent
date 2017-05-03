@@ -24,6 +24,7 @@ import java.io.Serializable;
  */
 public class AgentConnection implements Serializable {
 
+    private static final long serialVersionUID = 3863678321252564621L;
     private String accessToken;
     private int accessTokenId;
     private String node;

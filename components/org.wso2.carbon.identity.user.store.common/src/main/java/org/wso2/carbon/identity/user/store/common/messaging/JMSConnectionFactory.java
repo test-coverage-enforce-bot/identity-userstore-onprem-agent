@@ -38,7 +38,7 @@ public class JMSConnectionFactory {
     /**
      * Create connection factory
      * @param messageBrokerURL message broker URL
-     * @return
+     * @return ActiveMQ Connection factory
      */
     public ActiveMQConnectionFactory createActiveMQConnectionFactory(String messageBrokerURL) {
         if (null != this.connectionFactory) {
@@ -67,12 +67,12 @@ public class JMSConnectionFactory {
 
         } catch (JMSException e) {
             // Need to close the connection in the case if durable subscriptions
-            if (null != connection) {
-                try {
+            try {
+                if (connection != null) {
                     connection.close();
-                } catch (Exception ex) {
-                    LOGGER.error("Error while closing the connection", ex);
                 }
+            } catch (Exception ex) {
+                LOGGER.error("Error while closing the connection", ex);
             }
             throw new JMSConnectionException("Error occurred while creating queue connection", e);
         }
@@ -113,7 +113,7 @@ public class JMSConnectionFactory {
      * Create message producer
      * @param session JMS Session
      * @param destination Destination queue or topic
-     * @return
+     * @return Message Producer
      * @throws JMSConnectionException
      */
     public MessageProducer createMessageProducer(Session session, Destination destination)
@@ -130,7 +130,7 @@ public class JMSConnectionFactory {
      * @param session JMS Session
      * @param destination Destination queue or topic
      * @param deliveryMode delivery mode
-     * @return
+     * @return Message producer
      * @throws JMSConnectionException
      */
     public MessageProducer createMessageProducer(Session session, Destination destination, int deliveryMode)
@@ -154,7 +154,7 @@ public class JMSConnectionFactory {
      * @throws JMSConnectionException Thrown when looking up destination
      */
     public Destination createQueueDestination(Session session, String destinationName) throws JMSConnectionException {
-        Destination destination = null;
+        Destination destination;
         try {
             destination = session.createQueue(destinationName);
         } catch (JMSException e) {
@@ -173,7 +173,7 @@ public class JMSConnectionFactory {
      * @throws JMSConnectionException Thrown when looking up destination
      */
     public Destination createTopicDestination(Session session, String destinationName) throws JMSConnectionException {
-        Destination destination = null;
+        Destination destination;
         try {
             destination = session.createTopic(destinationName);
         } catch (JMSException e) {

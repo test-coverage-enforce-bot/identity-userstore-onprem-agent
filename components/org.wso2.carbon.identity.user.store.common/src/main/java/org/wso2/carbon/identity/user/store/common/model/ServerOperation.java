@@ -24,6 +24,7 @@ import java.io.Serializable;
  */
 public class ServerOperation implements Serializable {
 
+    private static final long serialVersionUID = -2606141652713348215L;
     private String operationType;
     private String domain;
     private String tenantDomain;

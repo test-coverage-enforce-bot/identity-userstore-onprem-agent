@@ -35,6 +35,24 @@ public class TokenMgtService extends AbstractAdmin {
     private static Log LOGGER = LogFactory.getLog(TokenMgtService.class);
 
     /**
+     * Get access token
+     * @param domain
+     * @return access token
+     */
+    public String getAccessToken(String domain) {
+
+        String tenantDomain = CarbonContext.getThreadLocalCarbonContext().getTenantDomain();
+        TokenMgtDao tokenMgtDao = new TokenMgtDao();
+
+        try {
+            return tokenMgtDao.getAccessToken(tenantDomain, domain);
+        } catch (WSUserStoreException e) {
+            LOGGER.error("Error occurred while inserting token for domain " + domain, e);
+        }
+        return null;
+    }
+
+    /**
      * Insert access token
      * @param domain
      * @param token

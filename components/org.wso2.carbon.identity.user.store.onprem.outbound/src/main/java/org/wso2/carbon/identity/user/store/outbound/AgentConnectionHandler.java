@@ -24,12 +24,10 @@ import org.wso2.carbon.identity.user.store.common.UserStoreConstants;
 import org.wso2.carbon.identity.user.store.common.messaging.JMSConnectionException;
 import org.wso2.carbon.identity.user.store.common.messaging.JMSConnectionFactory;
 import org.wso2.carbon.identity.user.store.common.model.ServerOperation;
-import org.wso2.carbon.identity.user.store.outbound.dao.AgentConnectionMgtDao;
 import org.wso2.carbon.identity.user.store.outbound.exception.WSUserStoreException;
 import org.wso2.carbon.user.api.RealmConfiguration;
 import org.wso2.carbon.user.api.UserStoreException;
 
-import java.util.List;
 import java.util.Map;
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
@@ -50,7 +48,7 @@ public class AgentConnectionHandler {
      */
     public void killAgentConnections(String tenantDomain, String domain) {
 
-        String messageBrokerURL = null;
+        String messageBrokerURL;
         RealmConfiguration secondaryRealmConfiguration = null;
         try {
             secondaryRealmConfiguration = CarbonContext.getThreadLocalCarbonContext().getUserRealm()
@@ -61,7 +59,8 @@ public class AgentConnectionHandler {
 
         if (secondaryRealmConfiguration != null) {
             Map<String, String> userStoreProperties = secondaryRealmConfiguration.getUserStoreProperties();
-            messageBrokerURL = userStoreProperties.get(UserStoreConstants.USER_STORE_PROPERTY_NAME_MESSAGE_BROKER_ENDPOINT);
+            messageBrokerURL = userStoreProperties
+                    .get(UserStoreConstants.USER_STORE_PROPERTY_NAME_MESSAGE_BROKER_ENDPOINT);
 
             JMSConnectionFactory connectionFactory = new JMSConnectionFactory();
             Connection connection = null;
@@ -114,20 +113,15 @@ public class AgentConnectionHandler {
             Session requestSession, MessageProducer producer, Destination responseQueue)
             throws JMSException, WSUserStoreException {
 
-        AgentConnectionMgtDao AgentConnectionMgtDao = new AgentConnectionMgtDao();
-        List<String> serverNodes = AgentConnectionMgtDao.getServerNodes(tenantDomain);
-        for (String serverNode : serverNodes) {
-            ServerOperation requestOperation = new ServerOperation();
-            requestOperation.setTenantDomain(tenantDomain);
-            requestOperation.setDomain(domain);
-            requestOperation.setOperationType(operationType);
-            ObjectMessage requestMessage = requestSession.createObjectMessage();
-            requestMessage.setObject(requestOperation);
-            requestMessage.setJMSExpiration(UserStoreConstants.QUEUE_SERVER_MESSAGE_LIFETIME);
+        ServerOperation requestOperation = new ServerOperation();
+        requestOperation.setTenantDomain(tenantDomain);
+        requestOperation.setDomain(domain);
+        requestOperation.setOperationType(operationType);
+        ObjectMessage requestMessage = requestSession.createObjectMessage();
+        requestMessage.setObject(requestOperation);
+        requestMessage.setJMSExpiration(UserStoreConstants.QUEUE_SERVER_MESSAGE_LIFETIME);
 
-            requestMessage.setStringProperty(UserStoreConstants.UM_MESSAGE_SELECTOR_SERVER_NODE, serverNode);
-            requestMessage.setJMSReplyTo(responseQueue);
-            producer.send(requestMessage);
-        }
+        requestMessage.setJMSReplyTo(responseQueue);
+        producer.send(requestMessage);
     }
 }

@@ -24,6 +24,7 @@ import org.wso2.carbon.core.AbstractAdmin;
 import org.wso2.carbon.identity.user.store.common.model.AgentConnection;
 import org.wso2.carbon.identity.user.store.outbound.dao.AgentConnectionMgtDao;
 import org.wso2.carbon.identity.user.store.outbound.exception.WSUserStoreException;
+import org.wso2.carbon.utils.CarbonUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -34,6 +35,9 @@ import java.util.List;
 public class AgentMgtService extends AbstractAdmin {
 
     private static Log LOGGER = LogFactory.getLog(AgentMgtService.class);
+
+    private final static String AGENT_STATIC_FILES_PATH = "/repository/resources/agent/static";
+    private final static String AGENT_FILE_NAME = "wso2agent.zip";
 
     /**
      * Get all agent connections for user store domain
@@ -69,6 +73,14 @@ public class AgentMgtService extends AbstractAdmin {
             LOGGER.error("Error occurred while deleting agent connections for domain " + domain, e);
         }
         return false;
+    }
+
+    /**
+     * Return the file path of wso2agent.zip file to download
+     * @return File path to wso2agent.zip file
+     */
+    public String getAgentFilePath() {
+        return CarbonUtils.getCarbonHome() + AGENT_STATIC_FILES_PATH + "/" + AGENT_FILE_NAME;
     }
 
 }

@@ -77,9 +77,9 @@ public class TokenMgtDao {
 
     /**
      * Delete access token for particular tenant and user store
-     * @param tenantDomain
-     * @param domain
-     * @return
+     * @param tenantDomain Tenant domain
+     * @param domain User store domain name
+     * @return result
      * @throws WSUserStoreException
      */
     public boolean deleteAccessToken(String tenantDomain, String domain) throws WSUserStoreException {
@@ -102,9 +102,9 @@ public class TokenMgtDao {
 
     /**
      * Update access token
-     * @param oldToken
-     * @param newToken
-     * @param domain
+     * @param oldToken Old access token
+     * @param newToken New access token
+     * @param domain User store domain name
      * @return result of the update operation
      * @throws WSUserStoreException
      */

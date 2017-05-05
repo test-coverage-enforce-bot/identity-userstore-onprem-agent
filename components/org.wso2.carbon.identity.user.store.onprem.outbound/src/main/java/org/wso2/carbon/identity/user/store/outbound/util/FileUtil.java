@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * WSO2 Inc. licenses this file to you under the Apache License,
  *  Version 2.0 (the "License"); you may not use this file except
@@ -19,22 +19,18 @@
 package org.wso2.carbon.identity.user.store.outbound.util;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Date;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 /**
  * Utility class to file operations such as create, delete, zip etc..
  */
+
+//TODO remove this class
 public class FileUtil {
 
-    private static Log log = LogFactory.getLog(FileUtil.class);
     public final static String AGENT_TEMP_PATH = "/repository/resources/agent/tmp/";
     public final static String AGENT_STATIC_FILES_PATH = "/repository/resources/agent/static";
     public final static String AGENT_FILE_NAME = "wso2agent.zip";
@@ -53,8 +49,8 @@ public class FileUtil {
     /**
      * Copy files
      *
-     * @param sourcePath
-     * @param destinationPath
+     * @param sourcePath Source path to copy file
+     * @param destinationPath Destination path to copy files
      * @throws java.io.IOException
      */
     public void copyFiles(String sourcePath, String destinationPath) throws IOException {

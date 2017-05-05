@@ -94,6 +94,7 @@ public class WSUserStoreDSComponent {
     private void scheduleCleanupTask(){
         Timer time = new Timer();
         CleanupSchedulerTask cleanupSchedulerTask = new CleanupSchedulerTask();
+        //Cleaning temporary files in each 5 hours
         time.schedule(cleanupSchedulerTask, 0, 5 * 60 * 60 * 1000);
     }
 

@@ -31,13 +31,12 @@ import org.wso2.carbon.identity.user.store.common.model.UserOperation;
 import org.wso2.carbon.identity.user.store.outbound.cache.UserAttributeCache;
 import org.wso2.carbon.identity.user.store.outbound.cache.UserAttributeCacheEntry;
 import org.wso2.carbon.identity.user.store.outbound.cache.UserAttributeCacheKey;
-import org.wso2.carbon.identity.user.store.outbound.exception.WSUserStoreException;
 import org.wso2.carbon.user.api.ClaimMapping;
 import org.wso2.carbon.user.api.Properties;
 import org.wso2.carbon.user.api.Property;
 import org.wso2.carbon.user.api.RealmConfiguration;
 import org.wso2.carbon.user.core.UserCoreConstants;
-import org.wso2.carbon.user.core.UserRealm;
+    import org.wso2.carbon.user.core.UserRealm;
 import org.wso2.carbon.user.core.UserStoreException;
 import org.wso2.carbon.user.core.claim.ClaimManager;
 import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
@@ -77,8 +76,8 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
     }
 
     /**
-     * @param realmConfig
-     * @param tenantId
+     * @param realmConfig Realm configuration
+     * @param tenantId Tenant Id
      * @throws UserStoreException
      */
     public WSOutboundUserStoreManager(RealmConfiguration realmConfig, int tenantId) throws UserStoreException {
@@ -197,6 +196,7 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
             Message responseMessage = null;
             int retryCount = 0;
             while (responseMessage == null && getMessageRetryLimit() > retryCount) {
+                //TODO add a debug log with retry count and operation
                 String correlationId = UUID.randomUUID().toString();
                 responseQueue = connectionFactory
                         .createQueueDestination(requestSession, UserStoreConstants.QUEUE_NAME_RESPONSE);
@@ -207,22 +207,28 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
 
                 responseSession = connectionFactory.createSession(connection);
 
-                String filter = String.format("JMSCorrelationID='%s'", correlationId);
+                String filter = String.format("JMSCorrelationID='%s'", correlationId); //TODO add to JMSCorrelationID
                 MessageConsumer consumer = responseSession.createConsumer(responseQueue, filter);
                 responseMessage = consumer.receive(getMessageConsumeTimeout());
                 retryCount++;
             }
+
             if (responseMessage != null) {
                 UserOperation response = (UserOperation) ((ObjectMessage) responseMessage).getObject();
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug(
+                            "Authentication response: " + response.getResponseData() + " for user: " + userName);
+                }
                 return UserStoreConstants.UM_OPERATION_AUTHENTICATE_RESULT_SUCCESS.equals(response.getResponseData());
             } else {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Authentication failed for user: " + userName + " due to response object is null");
+                }
                 return false;
             }
         } catch (JMSConnectionException e) {
-            LOGGER.error("Error occurred while adding message to queue", e);
+            LOGGER.error("Error occurred while creating JMS connection", e);
         } catch (JMSException e) {
-            LOGGER.error("Error occurred while adding message to queue", e);
-        } catch (WSUserStoreException e) {
             LOGGER.error("Error occurred while adding message to queue", e);
         } finally {
             try {
@@ -236,18 +242,17 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
 
     /**
      * Add next user operation to queue
-     * @param correlationId
-     * @param operationType
-     * @param requestData
-     * @param requestSession
-     * @param producer
-     * @param responseQueue
+     * @param correlationId Connection Id
+     * @param operationType Operation type ex. authenticate, getuserlist etc.
+     * @param requestData Request data ex. username/password
+     * @param requestSession JMS session
+     * @param producer JMS Producer
+     * @param responseQueue Destination queue to add the message
      * @throws JMSException
-     * @throws WSUserStoreException
      */
     private void addNextUserOperation(String correlationId, String operationType, String requestData,
             Session requestSession, MessageProducer producer, Destination responseQueue)
-            throws JMSException, WSUserStoreException {
+            throws JMSException { //TODO mention adding to topic
 
         String tenantDomain = IdentityTenantUtil.getTenantDomain(tenantId);
 
@@ -256,7 +261,7 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
         requestOperation.setRequestData(requestData);
         requestOperation.setTenant(tenantDomain);
         requestOperation.setRequestType(operationType);
-        requestOperation.setDomain(realmConfig.getUserStoreProperty("DomainName"));
+        requestOperation.setDomain(realmConfig.getUserStoreProperty("DomainName")); //TODO check constant
 
         ObjectMessage requestMessage = requestSession.createObjectMessage();
         requestMessage.setObject(requestOperation);
@@ -399,14 +404,12 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
                 }
 
             } catch (JMSConnectionException e) {
-                LOGGER.error("Error occurred while adding message to queue", e);
+                LOGGER.error("Error occurred while creating JMS connection", e);
             } catch (JMSException e) {
                 LOGGER.error("Error occurred while adding message to queue", e);
             } catch (org.wso2.carbon.user.api.UserStoreException e) {
                 LOGGER.error("Error occurred while getting claim mappings", e);
             } catch (JSONException e) {
-                LOGGER.error("Error occurred while reading JSON object", e);
-            } catch (WSUserStoreException e) {
                 LOGGER.error("Error occurred while reading JSON object", e);
             } finally {
                 try {
@@ -647,12 +650,10 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
             }
 
         } catch (JMSConnectionException e) {
-            LOGGER.error("Error occurred while adding message to queue", e);
+            LOGGER.error("Error occurred while creating JMS connection", e);
         } catch (JMSException e) {
             LOGGER.error("Error occurred while adding message to queue", e);
         } catch (JSONException e) {
-            LOGGER.error("Error occurred while reading JSON object", e);
-        } catch (WSUserStoreException e) {
             LOGGER.error("Error occurred while reading JSON object", e);
         } finally {
             try {
@@ -734,12 +735,10 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
             }
 
         } catch (JMSConnectionException e) {
-            LOGGER.error("Error occurred while adding message to queue", e);
+            LOGGER.error("Error occurred while creating JMS Connection", e);
         } catch (JMSException e) {
             LOGGER.error("Error occurred while adding message to queue", e);
         } catch (JSONException e) {
-            LOGGER.error("Error occurred while reading JSON object", e);
-        } catch (WSUserStoreException e) {
             LOGGER.error("Error occurred while reading JSON object", e);
         } finally {
             try {
@@ -830,12 +829,10 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
             }
 
         } catch (JMSConnectionException e) {
-            LOGGER.error("Error occurred while adding message to queue", e);
+            LOGGER.error("Error occurred while creating JMS Connection", e);
         } catch (JMSException e) {
             LOGGER.error("Error occurred while adding message to queue", e);
         } catch (JSONException e) {
-            LOGGER.error("Error occurred while reading JSON object", e);
-        } catch (WSUserStoreException e) {
             LOGGER.error("Error occurred while reading JSON object", e);
         } finally {
             try {

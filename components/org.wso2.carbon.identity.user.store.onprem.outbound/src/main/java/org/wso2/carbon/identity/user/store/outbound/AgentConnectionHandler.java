@@ -24,7 +24,6 @@ import org.wso2.carbon.identity.user.store.common.UserStoreConstants;
 import org.wso2.carbon.identity.user.store.common.messaging.JMSConnectionException;
 import org.wso2.carbon.identity.user.store.common.messaging.JMSConnectionFactory;
 import org.wso2.carbon.identity.user.store.common.model.ServerOperation;
-import org.wso2.carbon.identity.user.store.outbound.exception.WSUserStoreException;
 import org.wso2.carbon.user.api.RealmConfiguration;
 import org.wso2.carbon.user.api.UserStoreException;
 
@@ -43,8 +42,8 @@ public class AgentConnectionHandler {
 
     /**
      * Send a server operation message to kill already connected agent connections
-     * @param tenantDomain
-     * @param domain
+     * @param tenantDomain Tenant domain
+     * @param domain User store domain name
      */
     public void killAgentConnections(String tenantDomain, String domain) {
 
@@ -83,10 +82,8 @@ public class AgentConnectionHandler {
                         requestSession, producer, responseQueue);
 
             } catch (JMSConnectionException e) {
-                LOGGER.error("Error occurred while adding message to queue", e);
+                LOGGER.error("Error occurred while creating JMS Connection", e);
             } catch (JMSException e) {
-                LOGGER.error("Error occurred while adding message to queue", e);
-            } catch (WSUserStoreException e) {
                 LOGGER.error("Error occurred while adding message to queue", e);
             } finally {
                 try {
@@ -100,23 +97,19 @@ public class AgentConnectionHandler {
 
     /**
      * Send server operation message to queue
-     * @param operationType
-     * @param domain
-     * @param tenantDomain
-     * @param requestSession
-     * @param producer
-     * @param responseQueue
-     * @throws javax.jms.JMSException
-     * @throws org.wso2.carbon.identity.user.store.outbound.exception.WSUserStoreException
+     * @param operationType Operation type ex. killagents
+     * @param requestSession JMS session
+     * @param producer JMS Producer
+     * @param responseQueue Destination queue to add the message
+     * @throws JMSException
      */
     private void addNextServerOperation(String operationType, String domain, String tenantDomain,
-            Session requestSession, MessageProducer producer, Destination responseQueue)
-            throws JMSException, WSUserStoreException {
+            Session requestSession, MessageProducer producer, Destination responseQueue) throws JMSException {
 
         ServerOperation requestOperation = new ServerOperation();
         requestOperation.setTenantDomain(tenantDomain);
         requestOperation.setDomain(domain);
-        requestOperation.setOperationType(operationType);
+        requestOperation.setOperationType(operationType); //TODO add an ENUM
         ObjectMessage requestMessage = requestSession.createObjectMessage();
         requestMessage.setObject(requestOperation);
         requestMessage.setJMSExpiration(UserStoreConstants.QUEUE_SERVER_MESSAGE_LIFETIME);

@@ -36,7 +36,7 @@ public class TokenMgtService extends AbstractAdmin {
 
     /**
      * Get access token
-     * @param domain
+     * @param domain User store domain name
      * @return access token
      */
     public String getAccessToken(String domain) {
@@ -47,16 +47,16 @@ public class TokenMgtService extends AbstractAdmin {
         try {
             return tokenMgtDao.getAccessToken(tenantDomain, domain);
         } catch (WSUserStoreException e) {
-            LOGGER.error("Error occurred while inserting token for domain " + domain, e);
+            LOGGER.error("Error occurred while getting token for domain " + domain, e);
         }
         return null;
     }
 
     /**
      * Insert access token
-     * @param domain
-     * @param token
-     * @return
+     * @param domain User store domain name
+     * @param token Access token
+     * @return result
      */
     public boolean insertAccessToken(String domain, String token) {
 
@@ -77,8 +77,8 @@ public class TokenMgtService extends AbstractAdmin {
 
     /**
      * Delete access token
-     * @param domain
-     * @return
+     * @param domain User store domain name
+     * @return result
      */
     public boolean deleteAccessToken(String domain) {
 
@@ -94,10 +94,10 @@ public class TokenMgtService extends AbstractAdmin {
 
     /**
      * Update access token
-     * @param oldToken
-     * @param newToken
-     * @param domain
-     * @return
+     * @param oldToken Old access token
+     * @param newToken New access token
+     * @param domain User store domain name
+     * @return result
      */
     public boolean updateAccessToken(String oldToken, String newToken, String domain) {
 

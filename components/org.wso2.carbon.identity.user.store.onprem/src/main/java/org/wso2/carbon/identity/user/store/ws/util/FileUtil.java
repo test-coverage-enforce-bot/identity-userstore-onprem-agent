@@ -121,7 +121,9 @@ public class FileUtil {
             dos.flush();
         } finally{
             try {
-                dos.close();
+                if (dos != null) {
+                    dos.close();
+                }
             } catch (IOException e) {
                 log.error("Error occurred while closing data stream", e);
             }
@@ -167,10 +169,15 @@ public class FileUtil {
             } else {
                 byte[] buf = new byte[1024];
                 int len;
-                FileInputStream in = new FileInputStream(srcFile);
-                zip.putNextEntry(new ZipEntry(path + "/" + folder.getName()));
-                while ((len = in.read(buf)) > 0) {
-                    zip.write(buf, 0, len);
+                FileInputStream in = null;
+                try {
+                    in = new FileInputStream(srcFile);
+                    zip.putNextEntry(new ZipEntry(path + "/" + folder.getName()));
+                    while ((len = in.read(buf)) > 0) {
+                        zip.write(buf, 0, len);
+                    }
+                }finally {
+                    in.close();
                 }
             }
         }
@@ -186,18 +193,21 @@ public class FileUtil {
     private void addFolderToZip(String path, String srcFolder, ZipOutputStream zip) throws IOException {
         File folder = new File(srcFolder);
 
-        if (folder.list().length == 0) {
-            addFileToZip(path, srcFolder, zip, true);
-        } else {
-            for (String fileName : folder.list()) {
-                if (path.equals("")) {
-                    addFileToZip(folder.getName(), srcFolder + "/" + fileName, zip, false);
-                } else {
-                    addFileToZip(path + "/" + folder.getName(), srcFolder + "/" + fileName, zip, false);
+        if(folder != null && folder.list() != null) {
+            if (folder.list().length == 0) {
+                addFileToZip(path, srcFolder, zip, true);
+            } else {
+                for (String fileName : folder.list()) {
+                    if (path.equals("")) {
+                        addFileToZip(folder.getName(), srcFolder + "/" + fileName, zip, false);
+                    } else {
+                        addFileToZip(path + "/" + folder.getName(), srcFolder + "/" + fileName, zip, false);
+                    }
                 }
             }
         }
     }
+
 
 
 

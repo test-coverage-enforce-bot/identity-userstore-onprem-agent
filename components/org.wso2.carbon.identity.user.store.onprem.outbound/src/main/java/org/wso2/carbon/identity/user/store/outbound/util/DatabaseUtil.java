@@ -59,7 +59,7 @@ public class DatabaseUtil {
 
     /**
      * Get database connection
-     * @return
+     * @return database connection
      * @throws WSUserStoreException
      */
     public Connection getDBConnection() throws WSUserStoreException {

@@ -37,8 +37,8 @@ public class AgentMgtService extends AbstractAdmin {
 
     /**
      * Get all agent connections for user store domain
-     * @param domain
-     * @return
+     * @param domain User store domain
+     * @return List of agent connections
      */
     public List<AgentConnection> getAgentConnections(String domain) {
 
@@ -47,15 +47,15 @@ public class AgentMgtService extends AbstractAdmin {
         try {
             return agentConnectionMgtDao.getAgentConnections(tenantDomain, domain);
         } catch (WSUserStoreException e) {
-            LOGGER.error("Error occurred while getting agent connections for domain " + domain, e);
+            LOGGER.error("Error occurred while getting agent connections for domain: " + domain, e);
         }
         return Collections.emptyList();
     }
 
     /**
      * Delete agent connections
-     * @param domain
-     * @return
+     * @param domain User store domain
+     * @return result
      */
     public boolean deleteConnections(String domain) {
 

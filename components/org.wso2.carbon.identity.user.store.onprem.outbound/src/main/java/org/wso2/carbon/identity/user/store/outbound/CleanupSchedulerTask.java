@@ -1,5 +1,5 @@
 /*
-*  Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+*  Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 *
 *  WSO2 Inc. licenses this file to you under the Apache License,
 *  Version 2.0 (the "License"); you may not use this file except
@@ -29,7 +29,7 @@ import java.util.TimerTask;
 
 public class CleanupSchedulerTask extends TimerTask{
 
-    private static Log log = LogFactory.getLog(CleanupSchedulerTask.class);
+    private static Log LOGGER = LogFactory.getLog(CleanupSchedulerTask.class);
 
     public void run() {
         cleanTmpFolder();
@@ -37,9 +37,10 @@ public class CleanupSchedulerTask extends TimerTask{
 
     private void cleanTmpFolder(){
         try {
+            LOGGER.info("Cleaning temporary agent files.");
             FileUtils.cleanDirectory(new File(CarbonUtils.getCarbonHome() + FileUtil.AGENT_TEMP_PATH));
         } catch (IOException e) {
-            log.error("Error occurred while cleaning temp directory", e);
+            LOGGER.error("Error occurred while cleaning temp directory", e);
         }
     }
 }

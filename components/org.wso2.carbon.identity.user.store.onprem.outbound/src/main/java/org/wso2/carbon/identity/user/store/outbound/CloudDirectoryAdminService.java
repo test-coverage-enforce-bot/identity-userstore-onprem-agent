@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * WSO2 Inc. licenses this file to you under the Apache License,
  *  Version 2.0 (the "License"); you may not use this file except
@@ -23,6 +23,7 @@ import org.wso2.carbon.core.AbstractAdmin;
 import org.wso2.carbon.identity.user.store.outbound.util.FileUtil;
 import org.wso2.carbon.utils.CarbonUtils;
 
+//TODO add a class comment
 public class CloudDirectoryAdminService extends AbstractAdmin {
 
     private static Log log = LogFactory.getLog(CloudDirectoryAdminService.class);
@@ -30,8 +31,9 @@ public class CloudDirectoryAdminService extends AbstractAdmin {
     /**
      * Generate agent zip file
      *
-     * @return
+     * @return Path to generated zip file
      */
+    //TODO remove copying file to tmp directory and get from static and remove
     public String generateAgentFile() {
 
         String directoryName;

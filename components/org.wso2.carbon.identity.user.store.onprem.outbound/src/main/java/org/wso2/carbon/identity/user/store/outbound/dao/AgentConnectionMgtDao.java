@@ -33,8 +33,8 @@ public class AgentConnectionMgtDao {
 
     /**
      * Get agent connections for particular tenant and user store
-     * @param tenantDomain
-     * @param domain
+     * @param tenantDomain Tenant domain
+     * @param domain User store domain name
      * @return List of connections
      * @throws org.wso2.carbon.identity.user.store.outbound.exception.WSUserStoreException
      */
@@ -65,8 +65,8 @@ public class AgentConnectionMgtDao {
 
     /**
      * Delete agent connections
-     * @param tenantDomain
-     * @param domain
+     * @param tenantDomain Tenant domain
+     * @param domain User store domain name
      * @return result of the delete operation
      * @throws org.wso2.carbon.identity.user.store.outbound.exception.WSUserStoreException
      */
@@ -90,9 +90,9 @@ public class AgentConnectionMgtDao {
 
     /**
      * Update agent connection status
-     * @param tenantDomain
-     * @param domain
-     * @param status
+     * @param tenantDomain Tenant domain
+     * @param domain User store domain name
+     * @param status Status of the connection
      * @return Result of the update operation
      * @throws org.wso2.carbon.identity.user.store.outbound.exception.WSUserStoreException
      */

@@ -17,6 +17,7 @@
  */
 package org.wso2.carbon.identity.user.store.outbound;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.context.CarbonContext;
@@ -68,7 +69,13 @@ public class TokenMgtService extends AbstractAdmin {
         accessToken.setDomain(domain);
         accessToken.setStatus(UserStoreConstants.ACCESS_TOKEN_STATUS_ACTIVE);
         try {
-            return tokenMgtDao.insertAccessToken(accessToken);
+            if (StringUtils.isEmpty(tokenMgtDao.getAccessToken(tenantDomain, domain))) {
+                return tokenMgtDao.insertAccessToken(accessToken);
+            } else {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Access token already exist for tenant: " + tenantDomain + " domain: " + domain);
+                }
+            }
         } catch (WSUserStoreException e) {
             LOGGER.error("Error occurred while inserting token for domain " + domain, e);
         }

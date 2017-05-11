@@ -70,7 +70,7 @@ public class AgentMgtService extends AbstractAdmin {
         try {
             return agentConnectionMgtDao.deleteConnections(tenantDomain, domain);
         } catch (WSUserStoreException e) {
-            LOGGER.error("Error occurred while deleting agent connections for domain " + domain, e);
+            LOGGER.error("Error occurred while deleting agent connections for domain: " + domain, e);
         }
         return false;
     }

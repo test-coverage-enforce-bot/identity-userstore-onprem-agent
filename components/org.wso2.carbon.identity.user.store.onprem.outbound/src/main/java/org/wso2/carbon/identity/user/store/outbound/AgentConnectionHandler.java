@@ -78,7 +78,8 @@ public class AgentConnectionHandler {
                         .createMessageProducer(requestSession, requestQueue, DeliveryMode.NON_PERSISTENT);
                 responseQueue = connectionFactory
                         .createQueueDestination(requestSession, UserStoreConstants.QUEUE_NAME_RESPONSE);
-                addNextServerOperation(UserStoreConstants.SERVER_OPERATION_TYPE_KILL_AGENTS, domain, tenantDomain,
+                addNextServerOperationToTopic(UserStoreConstants.SERVER_OPERATION_TYPE_KILL_AGENTS, domain,
+                        tenantDomain,
                         requestSession, producer, responseQueue);
 
             } catch (JMSConnectionException e) {
@@ -103,7 +104,7 @@ public class AgentConnectionHandler {
      * @param responseQueue Destination queue to add the message
      * @throws JMSException
      */
-    private void addNextServerOperation(String operationType, String domain, String tenantDomain,
+    private void addNextServerOperationToTopic(String operationType, String domain, String tenantDomain,
             Session requestSession, MessageProducer producer, Destination responseQueue) throws JMSException {
 
         ServerOperation requestOperation = new ServerOperation();

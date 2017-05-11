@@ -73,7 +73,7 @@ public class AgentConnectionHandler {
                 connectionFactory.start(connection);
                 requestSession = connectionFactory.createSession(connection);
                 requestQueue = connectionFactory
-                        .createTopicDestination(requestSession, UserStoreConstants.QUEUE_NAME_REQUEST);
+                        .createTopicDestination(requestSession, UserStoreConstants.TOPIC_NAME_REQUEST);
                 producer = connectionFactory
                         .createMessageProducer(requestSession, requestQueue, DeliveryMode.NON_PERSISTENT);
                 responseQueue = connectionFactory

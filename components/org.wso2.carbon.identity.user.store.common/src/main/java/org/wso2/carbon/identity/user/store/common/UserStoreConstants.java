@@ -37,7 +37,7 @@ public class UserStoreConstants {
     public static final String CLIENT_CONNECTION_STATUS_CONNECTION_FAILED = "F";
 
     public static final String ACCESS_TOKEN_STATUS_ACTIVE = "A";
-    public final static String QUEUE_NAME_REQUEST = "requestQueue";
+    public final static String TOPIC_NAME_REQUEST = "requestTopic";
     public final static String QUEUE_NAME_RESPONSE = "responseQueue";
     public final static String USER_STORE_PROPERTY_NAME_MESSAGE_BROKER_ENDPOINT = "MessageBrokerEndPointURL";
     public final static String USER_STORE_PROPERTY_NAME_MESSAGE_CONSUME_TIMEOUT = "MessageConsumeTimeout";

@@ -43,6 +43,5 @@ public class UserStoreConstants {
     public final static String USER_STORE_PROPERTY_NAME_MESSAGE_CONSUME_TIMEOUT = "MessageConsumeTimeout";
     public final static String USER_STORE_PROPERTY_NAME_MESSAGE_LIFETIME = "MessageLifetime";
     public final static String USER_STORE_PROPERTY_NAME_MESSAGE_RETRY_LIMIT = "MessageRetryLimit";
-    public final static String USER_STORE_PROPERTY_NAME_DIRECTORY_NAME = "DirectoryName";
     public final static long QUEUE_SERVER_MESSAGE_LIFETIME = 5 * 60 * 1000;
 }

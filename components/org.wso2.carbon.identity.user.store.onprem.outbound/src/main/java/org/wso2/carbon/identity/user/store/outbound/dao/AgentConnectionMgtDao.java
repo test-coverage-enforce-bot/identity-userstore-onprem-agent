@@ -18,6 +18,7 @@
 package org.wso2.carbon.identity.user.store.outbound.dao;
 
 import org.wso2.carbon.identity.core.util.IdentityDatabaseUtil;
+import org.wso2.carbon.identity.user.store.common.UserStoreConstants;
 import org.wso2.carbon.identity.user.store.common.model.AgentConnection;
 import org.wso2.carbon.identity.user.store.outbound.exception.WSUserStoreException;
 import org.wso2.carbon.identity.user.store.outbound.util.DatabaseUtil;
@@ -45,8 +46,9 @@ public class AgentConnectionMgtDao {
         List<AgentConnection> agentConnections = new ArrayList<>();
         try {
             insertTokenPrepStmt = connection.prepareStatement(SQLQueries.AGENT_CONNECTIONS_GET);
-            insertTokenPrepStmt.setString(1, domain);
-            insertTokenPrepStmt.setString(2, tenantDomain);
+            insertTokenPrepStmt.setString(1, UserStoreConstants.ACCESS_TOKEN_STATUS_ACTIVE);
+            insertTokenPrepStmt.setString(2, domain);
+            insertTokenPrepStmt.setString(3, tenantDomain);
             resultSet = insertTokenPrepStmt.executeQuery();
             while (resultSet.next()) {
                 AgentConnection agentConnection = new AgentConnection();

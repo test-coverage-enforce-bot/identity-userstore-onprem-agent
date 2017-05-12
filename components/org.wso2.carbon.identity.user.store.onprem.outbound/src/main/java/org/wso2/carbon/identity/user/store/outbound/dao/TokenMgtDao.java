@@ -29,7 +29,7 @@ import java.sql.SQLException;
 
 public class TokenMgtDao {
 
-    public String getAccessToken(String tenantDomain, String domain) throws WSUserStoreException {
+    public String getAccessToken(String tenantDomain, String domain, String status) throws WSUserStoreException {
         Connection connection = DatabaseUtil.getInstance().getDBConnection();
         PreparedStatement insertTokenPrepStmt = null;
         ResultSet resultSet = null;
@@ -37,6 +37,7 @@ public class TokenMgtDao {
             insertTokenPrepStmt = connection.prepareStatement(SQLQueries.ACCESS_TOKEN_GET);
             insertTokenPrepStmt.setString(1, tenantDomain);
             insertTokenPrepStmt.setString(2, domain);
+            insertTokenPrepStmt.setString(3, status);
             resultSet = insertTokenPrepStmt.executeQuery();
             if (resultSet.next()) {
                 return resultSet.getString("UM_TOKEN");
@@ -76,52 +77,52 @@ public class TokenMgtDao {
     }
 
     /**
-     * Delete access token for particular tenant and user store
+     * Update access token status for particular tenant and user store
      * @param tenantDomain Tenant domain
      * @param domain User store domain name
+     * @param status Status (Ex. A=Active, I=Inactive)
      * @return result
      * @throws WSUserStoreException
      */
-    public boolean deleteAccessToken(String tenantDomain, String domain) throws WSUserStoreException {
+    public boolean updateAccessTokenStatus(String tenantDomain, String domain, String status)
+            throws WSUserStoreException {
         Connection connection = DatabaseUtil.getInstance().getDBConnection();
         PreparedStatement insertTokenPrepStmt = null;
         try {
-            insertTokenPrepStmt = connection.prepareStatement(SQLQueries.ACCESS_TOKEN_DELETE);
-            insertTokenPrepStmt.setString(1, domain);
+            insertTokenPrepStmt = connection.prepareStatement(SQLQueries.ACCESS_TOKEN_STATUS_UPDATE);
+            insertTokenPrepStmt.setString(1, status);
             insertTokenPrepStmt.setString(2, tenantDomain);
+            insertTokenPrepStmt.setString(3, domain);
             insertTokenPrepStmt.executeUpdate();
             connection.commit();
             return true;
         } catch (SQLException e) {
-            throw new WSUserStoreException("Error occurred while deleting access for domain : " + domain,
-                    e);
+            throw new WSUserStoreException("Error occurred while deactivating access for domain: " + domain, e);
         } finally {
             IdentityDatabaseUtil.closeAllConnections(connection, null, insertTokenPrepStmt);
         }
     }
 
     /**
-     * Update access token
-     * @param oldToken Old access token
-     * @param newToken New access token
-     * @param domain User store domain name
+     * Update access token status
+     * @param accessToken Access token
+     * @param status Status of the access token
      * @return result of the update operation
      * @throws WSUserStoreException
      */
-    public boolean updateAccessToken(String oldToken, String newToken, String domain) throws WSUserStoreException {
+    public boolean updateAccessTokenStatus(String accessToken, String status) throws WSUserStoreException {
 
         Connection connection = DatabaseUtil.getInstance().getDBConnection();
         PreparedStatement insertTokenPrepStmt = null;
         try {
-            insertTokenPrepStmt = connection.prepareStatement(SQLQueries.ACCESS_TOKEN_UPDATE);
-            insertTokenPrepStmt.setString(1, newToken);
-            insertTokenPrepStmt.setString(2, oldToken);
-            insertTokenPrepStmt.setString(3, domain);
+            insertTokenPrepStmt = connection.prepareStatement(SQLQueries.ACCESS_TOKEN_STATUS_UPDATE_BY_TOKEN);
+            insertTokenPrepStmt.setString(1, status);
+            insertTokenPrepStmt.setString(2, accessToken);
             insertTokenPrepStmt.executeUpdate();
             connection.commit();
             return true;
         } catch (SQLException e) {
-            throw new WSUserStoreException("Error occurred while updating access for domain : " + domain, e);
+            throw new WSUserStoreException("Error occurred while updating access token status to:" + status, e);
         } finally {
             IdentityDatabaseUtil.closeAllConnections(connection, null, insertTokenPrepStmt);
         }

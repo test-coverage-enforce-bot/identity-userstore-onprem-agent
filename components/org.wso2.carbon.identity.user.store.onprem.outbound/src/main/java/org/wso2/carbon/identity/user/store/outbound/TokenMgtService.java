@@ -40,13 +40,13 @@ public class TokenMgtService extends AbstractAdmin {
      * @param domain User store domain name
      * @return access token
      */
-    public String getAccessToken(String domain) {
+    public String getActiveAccessToken(String domain) {
 
         String tenantDomain = CarbonContext.getThreadLocalCarbonContext().getTenantDomain();
         TokenMgtDao tokenMgtDao = new TokenMgtDao();
 
         try {
-            return tokenMgtDao.getAccessToken(tenantDomain, domain);
+            return tokenMgtDao.getAccessToken(tenantDomain, domain, UserStoreConstants.ACCESS_TOKEN_STATUS_ACTIVE);
         } catch (WSUserStoreException e) {
             LOGGER.error("Error occurred while getting token for domain " + domain, e);
         }
@@ -69,7 +69,8 @@ public class TokenMgtService extends AbstractAdmin {
         accessToken.setDomain(domain);
         accessToken.setStatus(UserStoreConstants.ACCESS_TOKEN_STATUS_ACTIVE);
         try {
-            if (StringUtils.isEmpty(tokenMgtDao.getAccessToken(tenantDomain, domain))) {
+            if (StringUtils.isEmpty(
+                    tokenMgtDao.getAccessToken(tenantDomain, domain, UserStoreConstants.ACCESS_TOKEN_STATUS_ACTIVE))) {
                 return tokenMgtDao.insertAccessToken(accessToken);
             } else {
                 if (LOGGER.isDebugEnabled()) {
@@ -83,16 +84,17 @@ public class TokenMgtService extends AbstractAdmin {
     }
 
     /**
-     * Delete access token
+     * Deactivate access token
      * @param domain User store domain name
      * @return result
      */
-    public boolean deleteAccessToken(String domain) {
+    public boolean deActivateAccessToken(String domain) {
 
         String tenantDomain = CarbonContext.getThreadLocalCarbonContext().getTenantDomain();
         TokenMgtDao tokenMgtDao = new TokenMgtDao();
         try {
-            return tokenMgtDao.deleteAccessToken(tenantDomain, domain);
+            return tokenMgtDao.updateAccessTokenStatus(tenantDomain, domain,
+                    UserStoreConstants.ACCESS_TOKEN_STATUS_INACTIVE);
         } catch (WSUserStoreException e) {
             LOGGER.error("Error occurred while deleting token for domain " + domain, e);
         }
@@ -100,13 +102,13 @@ public class TokenMgtService extends AbstractAdmin {
     }
 
     /**
-     * Update access token
+     * Revoke Old access token and regenerate new access token
      * @param oldToken Old access token
      * @param newToken New access token
      * @param domain User store domain name
      * @return result
      */
-    public boolean updateAccessToken(String oldToken, String newToken, String domain) {
+    public boolean revokeAndRegenerateAccessToken(String oldToken, String newToken, String domain) {
 
         String tenantDomain = CarbonContext.getThreadLocalCarbonContext().getTenantDomain();
         AgentConnectionHandler connectionHandler = new AgentConnectionHandler();
@@ -116,7 +118,14 @@ public class TokenMgtService extends AbstractAdmin {
         try {
             agentConnectionMgtDao.updateConnectionStatus(tenantDomain, domain,
                     UserStoreConstants.CLIENT_CONNECTION_STATUS_CONNECTION_FAILED);
-            return tokenMgtDao.updateAccessToken(oldToken, newToken, domain);
+            tokenMgtDao.updateAccessTokenStatus(oldToken, UserStoreConstants.ACCESS_TOKEN_STATUS_INACTIVE);
+
+            AccessToken accessToken = new AccessToken();
+            accessToken.setAccessToken(newToken);
+            accessToken.setTenant(tenantDomain);
+            accessToken.setDomain(domain);
+            accessToken.setStatus(UserStoreConstants.ACCESS_TOKEN_STATUS_ACTIVE);
+            return tokenMgtDao.insertAccessToken(accessToken);
         } catch (WSUserStoreException e) {
             LOGGER.error("Error occurred while updating token for domain " + domain, e);
         }

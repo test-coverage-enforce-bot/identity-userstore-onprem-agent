@@ -180,7 +180,7 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
         Connection connection = null;
         Session requestSession;
         Session responseSession;
-        Destination requestQueue;
+        Destination requestTopic;
         Destination responseQueue;
         MessageProducer producer;
         try {
@@ -191,15 +191,18 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
             connection = connectionFactory.createConnection();
             connectionFactory.start(connection);
             requestSession = connectionFactory.createSession(connection);
-            requestQueue = connectionFactory
+            requestTopic = connectionFactory
                     .createTopicDestination(requestSession, UserStoreConstants.TOPIC_NAME_REQUEST);
             producer = connectionFactory
-                    .createMessageProducer(requestSession, requestQueue, DeliveryMode.NON_PERSISTENT);
+                    .createMessageProducer(requestSession, requestTopic, DeliveryMode.NON_PERSISTENT);
 
             Message responseMessage = null;
             int retryCount = 0;
             while (responseMessage == null && getMessageRetryLimit() > retryCount) {
-                //TODO add a debug log with retry count and operation
+
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Trying to authenticate user: " + userName + " count: " + retryCount);
+                }
                 String correlationId = UUID.randomUUID().toString();
                 responseQueue = connectionFactory
                         .createQueueDestination(requestSession, UserStoreConstants.QUEUE_NAME_RESPONSE);
@@ -364,7 +367,7 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
             Connection connection = null;
             Session requestSession;
             Session responseSession;
-            Destination requestQueue;
+            Destination requestTopic;
             Destination responseQueue;
             MessageProducer producer;
             try {
@@ -372,15 +375,18 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
                 connection = connectionFactory.createConnection();
                 connectionFactory.start(connection);
                 requestSession = connectionFactory.createSession(connection);
-                requestQueue = connectionFactory
+                requestTopic = connectionFactory
                         .createTopicDestination(requestSession, UserStoreConstants.TOPIC_NAME_REQUEST);
                 producer = connectionFactory
-                        .createMessageProducer(requestSession, requestQueue, DeliveryMode.NON_PERSISTENT);
+                        .createMessageProducer(requestSession, requestTopic, DeliveryMode.NON_PERSISTENT);
 
                 int retryCount = 0;
                 Message responseMessage = null;
 
                 while (responseMessage == null && getMessageRetryLimit() > retryCount) {
+                    if (LOGGER.isDebugEnabled()) {
+                        LOGGER.debug("Trying to get user properties for user: " + userName + " count: " + retryCount);
+                    }
                     String correlationId = UUID.randomUUID().toString();
                     responseQueue = connectionFactory
                             .createQueueDestination(requestSession, UserStoreConstants.QUEUE_NAME_RESPONSE);
@@ -397,13 +403,21 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
                     responseMessage = consumer.receive(getMessageConsumeTimeout());
                     UserOperation response = (UserOperation) ((ObjectMessage) responseMessage).getObject();
 
-                    JSONObject resultObj = new JSONObject(response.getResponseData());
-                    Iterator iterator = resultObj.keys();
-                    while (iterator.hasNext()) {
-                        String key = (String) iterator.next();
-                        allUserAttributes.put(key, (String) resultObj.get(key));
+                    if(response != null) {
+                        JSONObject resultObj = new JSONObject(response.getResponseData());
+                        Iterator iterator = resultObj.keys();
+                        while (iterator.hasNext()) {
+                            String key = (String) iterator.next();
+                            allUserAttributes.put(key, (String) resultObj.get(key));
+                        }
+                        addAttributesToCache(userName, allUserAttributes);
+                    } else {
+                        if (LOGGER.isDebugEnabled()) {
+                            LOGGER.debug("Response is null for get user properties user: " + userName + " count: "
+                                    + retryCount);
+                        }
                     }
-                    addAttributesToCache(userName, allUserAttributes);
+                    retryCount++;
                 }
 
             } catch (JMSConnectionException e) {
@@ -605,7 +619,7 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
         Connection connection = null;
         Session requestSession;
         Session responseSession;
-        Destination requestQueue;
+        Destination requestTopic;
         Destination responseQueue;
         MessageProducer producer;
         List<String> userList = new ArrayList<>();
@@ -614,15 +628,18 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
             connection = connectionFactory.createConnection();
             connectionFactory.start(connection);
             requestSession = connectionFactory.createSession(connection);
-            requestQueue = connectionFactory
+            requestTopic = connectionFactory
                     .createTopicDestination(requestSession, UserStoreConstants.TOPIC_NAME_REQUEST);
             producer = connectionFactory
-                    .createMessageProducer(requestSession, requestQueue, DeliveryMode.NON_PERSISTENT);
+                    .createMessageProducer(requestSession, requestTopic, DeliveryMode.NON_PERSISTENT);
 
             int retryCount = 0;
             Message responseMessage = null;
 
             while (responseMessage == null && getMessageRetryLimit() > retryCount) {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Trying to get user list count: " + retryCount);
+                }
                 String correlationId = UUID.randomUUID().toString();
                 responseQueue = connectionFactory
                         .createQueueDestination(requestSession, UserStoreConstants.QUEUE_NAME_RESPONSE);
@@ -636,18 +653,24 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
                 String selector = String.format(JMS_CORRELATIONID_FILTER, correlationId);
                 MessageConsumer consumer = responseSession.createConsumer(responseQueue, selector);
                 responseMessage = consumer.receive(getMessageConsumeTimeout());
-                UserOperation response = (UserOperation) ((ObjectMessage) responseMessage).getObject();
-
-                JSONObject resultObj = new JSONObject(response.getResponseData());
-                JSONArray users = resultObj.getJSONArray("usernames");
-                for (int i = 0; i < users.length(); i++) {
-                    String user = (String) users.get(i);
-                    if (!CarbonConstants.REGISTRY_ANONNYMOUS_USERNAME.equals(user)) {
-                        String domain = this.realmConfig.getUserStoreProperty(UserStoreConfigConstants.DOMAIN_NAME);
-                        user = UserCoreUtil.addDomainToName(user, domain);
+                if(responseMessage != null) {
+                    UserOperation response = (UserOperation) ((ObjectMessage) responseMessage).getObject();
+                    JSONObject resultObj = new JSONObject(response.getResponseData());
+                    JSONArray users = resultObj.getJSONArray("usernames");
+                    for (int i = 0; i < users.length(); i++) {
+                        String user = (String) users.get(i);
+                        if (!CarbonConstants.REGISTRY_ANONNYMOUS_USERNAME.equals(user)) {
+                            String domain = this.realmConfig.getUserStoreProperty(UserStoreConfigConstants.DOMAIN_NAME);
+                            user = UserCoreUtil.addDomainToName(user, domain);
+                        }
+                        userList.add(user);
                     }
-                    userList.add(user);
+                } else {
+                    if (LOGGER.isDebugEnabled()) {
+                        LOGGER.debug("Response is for get user list count: " + retryCount);
+                    }
                 }
+                retryCount++;
             }
 
         } catch (JMSConnectionException e) {
@@ -695,7 +718,7 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
         Connection connection = null;
         Session requestSession;
         Session responseSession;
-        Destination requestQueue;
+        Destination requestTopic;
         Destination responseQueue;
         MessageProducer producer;
         List<String> groupList = new ArrayList<>();
@@ -704,15 +727,18 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
             connection = connectionFactory.createConnection();
             connectionFactory.start(connection);
             requestSession = connectionFactory.createSession(connection);
-            requestQueue = connectionFactory
+            requestTopic = connectionFactory
                     .createTopicDestination(requestSession, UserStoreConstants.TOPIC_NAME_REQUEST);
             producer = connectionFactory
-                    .createMessageProducer(requestSession, requestQueue, DeliveryMode.NON_PERSISTENT);
+                    .createMessageProducer(requestSession, requestTopic, DeliveryMode.NON_PERSISTENT);
 
             int retryCount = 0;
             Message responseMessage = null;
 
             while (responseMessage == null && getMessageRetryLimit() > retryCount) {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Trying to get role list of user: " + userName + " count: " + retryCount);
+                }
                 String correlationId = UUID.randomUUID().toString();
                 responseQueue = connectionFactory
                         .createQueueDestination(requestSession, UserStoreConstants.QUEUE_NAME_RESPONSE);
@@ -726,13 +752,22 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
                 String selector = String.format(JMS_CORRELATIONID_FILTER, correlationId);
                 MessageConsumer consumer = responseSession.createConsumer(responseQueue, selector);
                 responseMessage = consumer.receive(getMessageConsumeTimeout());
-                UserOperation response = (UserOperation) ((ObjectMessage) responseMessage).getObject();
 
-                JSONObject resultObj = new JSONObject(response.getResponseData());
-                JSONArray groups = resultObj.getJSONArray("groups");
-                for (int i = 0; i < groups.length(); i++) {
-                    groupList.add((String) groups.get(i));
+                if(responseMessage != null) {
+                    UserOperation response = (UserOperation) ((ObjectMessage) responseMessage).getObject();
+                    JSONObject resultObj = new JSONObject(response.getResponseData());
+                    JSONArray groups = resultObj.getJSONArray("groups");
+                    for (int i = 0; i < groups.length(); i++) {
+                        groupList.add((String) groups.get(i));
+                    }
+                } else {
+                    if (LOGGER.isDebugEnabled()) {
+                        LOGGER.debug(
+                                "Response is null for get role list of user: " + userName + " count: " + retryCount);
+                    }
                 }
+
+                retryCount++;
             }
 
         } catch (JMSConnectionException e) {
@@ -785,7 +820,7 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
         Connection connection = null;
         Session requestSession;
         Session responseSession;
-        Destination requestQueue;
+        Destination requestTopic;
         Destination responseQueue;
         MessageProducer producer;
         List<String> groupList = new ArrayList<>();
@@ -794,16 +829,18 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
             connection = connectionFactory.createConnection();
             connectionFactory.start(connection);
             requestSession = connectionFactory.createSession(connection);
-            requestQueue = connectionFactory
+            requestTopic = connectionFactory
                     .createTopicDestination(requestSession, UserStoreConstants.TOPIC_NAME_REQUEST);
             producer = connectionFactory
-                    .createMessageProducer(requestSession, requestQueue, DeliveryMode.NON_PERSISTENT);
+                    .createMessageProducer(requestSession, requestTopic, DeliveryMode.NON_PERSISTENT);
 
             int retryCount = 0;
             Message responseMessage = null;
 
             while (responseMessage == null && getMessageRetryLimit() > retryCount) {
-
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Trying to get role list count: " + retryCount);
+                }
                 String correlationId = UUID.randomUUID().toString();
                 responseQueue = connectionFactory
                         .createQueueDestination(requestSession, UserStoreConstants.QUEUE_NAME_RESPONSE);
@@ -816,17 +853,24 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
                 String selector = String.format(JMS_CORRELATIONID_FILTER, correlationId);
                 MessageConsumer consumer = responseSession.createConsumer(responseQueue, selector);
                 responseMessage = consumer.receive(getMessageConsumeTimeout());
-                UserOperation response = (UserOperation) ((ObjectMessage) responseMessage).getObject();
+                if(responseMessage != null) {
+                    UserOperation response = (UserOperation) ((ObjectMessage) responseMessage).getObject();
+                    JSONObject resultObj = new JSONObject(response.getResponseData());
+                    JSONArray groups = resultObj.getJSONArray("groups");
 
-                JSONObject resultObj = new JSONObject(response.getResponseData());
-                JSONArray groups = resultObj.getJSONArray("groups");
-
-                String userStoreDomain = this.realmConfig.getUserStoreProperty(UserStoreConfigConstants.DOMAIN_NAME);
-                for (int i = 0; i < groups.length(); i++) {
-                    String roleName = (String) groups.get(i);
-                    roleName = UserCoreUtil.addDomainToName(roleName, userStoreDomain);
-                    groupList.add(roleName);
+                    String userStoreDomain = this.realmConfig
+                            .getUserStoreProperty(UserStoreConfigConstants.DOMAIN_NAME);
+                    for (int i = 0; i < groups.length(); i++) {
+                        String roleName = (String) groups.get(i);
+                        roleName = UserCoreUtil.addDomainToName(roleName, userStoreDomain);
+                        groupList.add(roleName);
+                    }
+                } else {
+                    if (LOGGER.isDebugEnabled()) {
+                        LOGGER.debug("Response is null for get role list count: " + retryCount);
+                    }
                 }
+                retryCount++;
             }
 
         } catch (JMSConnectionException e) {

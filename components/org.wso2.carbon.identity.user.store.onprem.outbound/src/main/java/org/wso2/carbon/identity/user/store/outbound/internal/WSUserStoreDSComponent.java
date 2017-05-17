@@ -49,11 +49,11 @@ public class WSUserStoreDSComponent {
             ctxt.getBundleContext().registerService(UserStoreManager.class.getName(),
                     remoteStoreManager, null);
             if (log.isDebugEnabled()) {
-                log.debug("Carbon Remote User Store activated successfully.");
+                log.debug("Cloud outbound user store manager activated successfully.");
             }
 
         } catch (Throwable e) {
-            log.error("Failed to activate Carbon Remote User Store activated successfully ", e);
+            log.error("Failed to activate Cloud outbound user store manager.", e);
         }
     }
 

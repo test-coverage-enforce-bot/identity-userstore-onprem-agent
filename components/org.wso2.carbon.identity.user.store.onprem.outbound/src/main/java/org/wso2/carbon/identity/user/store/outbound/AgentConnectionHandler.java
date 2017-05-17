@@ -64,7 +64,7 @@ public class AgentConnectionHandler {
             JMSConnectionFactory connectionFactory = new JMSConnectionFactory();
             Connection connection = null;
             Session requestSession;
-            Destination requestQueue;
+            Destination requestTopic;
             Destination responseQueue;
             MessageProducer producer;
             try {
@@ -72,10 +72,10 @@ public class AgentConnectionHandler {
                 connection = connectionFactory.createConnection();
                 connectionFactory.start(connection);
                 requestSession = connectionFactory.createSession(connection);
-                requestQueue = connectionFactory
+                requestTopic = connectionFactory
                         .createTopicDestination(requestSession, UserStoreConstants.TOPIC_NAME_REQUEST);
                 producer = connectionFactory
-                        .createMessageProducer(requestSession, requestQueue, DeliveryMode.NON_PERSISTENT);
+                        .createMessageProducer(requestSession, requestTopic, DeliveryMode.NON_PERSISTENT);
                 responseQueue = connectionFactory
                         .createQueueDestination(requestSession, UserStoreConstants.QUEUE_NAME_RESPONSE);
                 addNextServerOperationToTopic(UserStoreConstants.SERVER_OPERATION_TYPE_KILL_AGENTS, domain,

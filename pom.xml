@@ -124,6 +124,11 @@
             <artifactId>activemq-all</artifactId>
             <version>${activemq-all-version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>${org.json.version}</version>
+        </dependency>
 
     </dependencies>
     </dependencyManagement>
@@ -298,7 +303,7 @@
         <um.ws.api.version.range>[5.0.0, 6.0.0)
         </um.ws.api.version.range>
 
-
+        <org.json.version>20160810</org.json.version>
 
         <activemq-all-version>5.10.0</activemq-all-version>
         <activemq-core-version>5.7.0</activemq-core-version>

@@ -17,6 +17,7 @@
  */
 package org.wso2.carbon.identity.user.store.common;
 
+import org.json.JSONObject;
 import org.wso2.carbon.identity.user.store.common.model.UserOperation;
 
 /**
@@ -25,29 +26,44 @@ import org.wso2.carbon.identity.user.store.common.model.UserOperation;
 public class MessageRequestUtil {
 
     public static String getAuthenticationRequest(String userName, Object credential) {
-        return String.format("{username : '%s', password : '%s'}", userName, credential);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("username", userName);
+        jsonObject.put("password", credential);
+        return jsonObject.toString();
     }
 
     public static String getRoleListRequest(String filter, int limit) {
-        return String.format("{filter : '%s', limit : '%s'}", filter, limit);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("filter", filter);
+        jsonObject.put("limit", limit);
+        return jsonObject.toString();
     }
 
     public static String getUserListRequest(String filter, int limit) {
-        return String.format("{filter : '%s', limit : '%s'}", filter, limit);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("filter", filter);
+        jsonObject.put("limit", limit);
+        return jsonObject.toString();
     }
 
     public static String getUserPropertyValuesRequestData(String username, String attributes) {
-        return String.format("{username : '%s', attributes : '%s'}", username, attributes);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("username", username);
+        jsonObject.put("attributes", attributes);
+        return jsonObject.toString();
     }
 
     public static String doGetExternalRoleListOfUserRequestData(String username) {
-        return String.format("{username : '%s'}", username);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("username", username);
+        return jsonObject.toString();
     }
 
     public static String getUserOperationJSONMessage(UserOperation userOperation) {
-        return String
-                .format("{correlationId : '%s', requestType : '%s', requestData : %s}",
-                        userOperation.getCorrelationId(),
-                        userOperation.getRequestType(), userOperation.getRequestData());
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("correlationId", userOperation.getCorrelationId());
+        jsonObject.put("requestType", userOperation.getRequestType());
+        jsonObject.put("requestData", new JSONObject(userOperation.getRequestData()));
+        return jsonObject.toString();
     }
 }

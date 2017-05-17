@@ -27,6 +27,7 @@ public class UserStoreConstants {
     public final static String UM_OPERATION_TYPE_GET_USER_ROLES = "getuserroles";
     public final static String UM_OPERATION_TYPE_GET_ROLES = "getroles";
     public final static String UM_OPERATION_TYPE_GET_USER_LIST = "getuserlist";
+    public final static String UM_OPERATION_TYPE_GET_ALL_ATTRIBUTES = "getallattributes";
     public final static String UM_OPERATION_TYPE_ERROR = "error";
 
     public final static String SERVER_OPERATION_TYPE_KILL_AGENTS = "killagents";

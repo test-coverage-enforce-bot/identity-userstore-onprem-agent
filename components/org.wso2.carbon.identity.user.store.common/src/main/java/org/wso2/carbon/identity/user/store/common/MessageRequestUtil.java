@@ -61,9 +61,18 @@ public class MessageRequestUtil {
 
     public static String getUserOperationJSONMessage(UserOperation userOperation) {
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("correlationId", userOperation.getCorrelationId());
-        jsonObject.put("requestType", userOperation.getRequestType());
-        jsonObject.put("requestData", new JSONObject(userOperation.getRequestData()));
+        jsonObject.put(UserStoreConstants.UM_JSON_ELEMENT_REQUEST_DATA_CORRELATION_ID, userOperation.getCorrelationId());
+        jsonObject.put(UserStoreConstants.UM_JSON_ELEMENT_REQUEST_DATA_TYPE, userOperation.getRequestType());
+        jsonObject.put(UserStoreConstants.UM_JSON_ELEMENT_REQUEST_DATA, new JSONObject(userOperation.getRequestData()));
+        return jsonObject.toString();
+    }
+
+    public static String getUserResponseJSONMessage(String correlationId, String result) {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put(UserStoreConstants.UM_JSON_ELEMENT_REQUEST_DATA_CORRELATION_ID, correlationId);
+        JSONObject jsonResponse = new JSONObject();
+        jsonResponse.put(UserStoreConstants.UM_JSON_ELEMENT_RESPONSE_DATA_RESULT, result);
+        jsonObject.put(UserStoreConstants.UM_JSON_ELEMENT_RESPONSE_DATA, jsonResponse);
         return jsonObject.toString();
     }
 }

@@ -225,7 +225,9 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
                     LOGGER.debug(
                             "Authentication response: " + response.getResponseData() + " for user: " + userName);
                 }
-                return UserStoreConstants.UM_OPERATION_AUTHENTICATE_RESULT_SUCCESS.equals(response.getResponseData());
+                JSONObject jsonResult = new JSONObject(response.getResponseData());
+                return UserStoreConstants.UM_OPERATION_AUTHENTICATE_RESULT_SUCCESS
+                        .equals(jsonResult.get(UserStoreConstants.UM_JSON_ELEMENT_RESPONSE_DATA_RESULT).toString());
             } else {
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("Authentication failed for user: " + userName + " due to response object is null");
@@ -236,6 +238,8 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
             LOGGER.error("Error occurred while creating JMS connection", e);
         } catch (JMSException e) {
             LOGGER.error("Error occurred while adding message to queue", e);
+        } catch (JSONException e) {
+            LOGGER.error("Error occurred transforming json message response", e);
         } finally {
             try {
                 connectionFactory.closeConnection(connection);
@@ -404,7 +408,9 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
                     UserOperation response = (UserOperation) ((ObjectMessage) responseMessage).getObject();
 
                     if(response != null) {
-                        JSONObject resultObj = new JSONObject(response.getResponseData());
+                        JSONObject responseObj = new JSONObject(response.getResponseData());
+                        JSONObject resultObj = new JSONObject(
+                                responseObj.get(UserStoreConstants.UM_JSON_ELEMENT_RESPONSE_DATA_RESULT).toString());
                         Iterator iterator = resultObj.keys();
                         while (iterator.hasNext()) {
                             String key = (String) iterator.next();
@@ -655,7 +661,9 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
                 responseMessage = consumer.receive(getMessageConsumeTimeout());
                 if(responseMessage != null) {
                     UserOperation response = (UserOperation) ((ObjectMessage) responseMessage).getObject();
-                    JSONObject resultObj = new JSONObject(response.getResponseData());
+                    JSONObject responseObj = new JSONObject(response.getResponseData());
+                    JSONObject resultObj = new JSONObject(
+                            responseObj.get(UserStoreConstants.UM_JSON_ELEMENT_RESPONSE_DATA_RESULT).toString());
                     JSONArray users = resultObj.getJSONArray("usernames");
                     for (int i = 0; i < users.length(); i++) {
                         String user = (String) users.get(i);
@@ -755,7 +763,9 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
 
                 if(responseMessage != null) {
                     UserOperation response = (UserOperation) ((ObjectMessage) responseMessage).getObject();
-                    JSONObject resultObj = new JSONObject(response.getResponseData());
+                    JSONObject responseObj = new JSONObject(response.getResponseData());
+                    JSONObject resultObj = new JSONObject(
+                            responseObj.get(UserStoreConstants.UM_JSON_ELEMENT_RESPONSE_DATA_RESULT).toString());
                     JSONArray groups = resultObj.getJSONArray("groups");
                     for (int i = 0; i < groups.length(); i++) {
                         groupList.add((String) groups.get(i));
@@ -855,7 +865,9 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
                 responseMessage = consumer.receive(getMessageConsumeTimeout());
                 if(responseMessage != null) {
                     UserOperation response = (UserOperation) ((ObjectMessage) responseMessage).getObject();
-                    JSONObject resultObj = new JSONObject(response.getResponseData());
+                    JSONObject responseObj = new JSONObject(response.getResponseData());
+                    JSONObject resultObj = new JSONObject(
+                            responseObj.get(UserStoreConstants.UM_JSON_ELEMENT_RESPONSE_DATA_RESULT).toString());
                     JSONArray groups = resultObj.getJSONArray("groups");
 
                     String userStoreDomain = this.realmConfig

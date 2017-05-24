@@ -46,4 +46,10 @@ public class UserStoreConstants {
     public final static String USER_STORE_PROPERTY_NAME_MESSAGE_LIFETIME = "MessageLifetime";
     public final static String USER_STORE_PROPERTY_NAME_MESSAGE_RETRY_LIMIT = "MessageRetryLimit";
     public final static long QUEUE_SERVER_MESSAGE_LIFETIME = 5 * 60 * 1000;
+
+    public static final String UM_JSON_ELEMENT_REQUEST_DATA_CORRELATION_ID = "correlationId";
+    public static final String UM_JSON_ELEMENT_RESPONSE_DATA = "responseData";
+    public static final String UM_JSON_ELEMENT_RESPONSE_DATA_RESULT = "result";
+    public static final String UM_JSON_ELEMENT_REQUEST_DATA = "requestData";
+    public static final String UM_JSON_ELEMENT_REQUEST_DATA_TYPE = "requestType";
 }

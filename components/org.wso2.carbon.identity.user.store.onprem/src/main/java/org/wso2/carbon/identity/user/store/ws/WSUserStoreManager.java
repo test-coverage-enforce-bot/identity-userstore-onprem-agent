@@ -397,7 +397,8 @@ public class WSUserStoreManager extends AbstractUserStoreManager {
         return mapAttributes;
     }
 
-    //Todo: Implement doCheckExistingRole
+    //This method is not implemented since this is required when deleting and adding roles. Need to implement
+    //this method when those two method implement
     @Override
     protected boolean doCheckExistingRole(String roleName) throws UserStoreException {
         return true;
@@ -408,7 +409,8 @@ public class WSUserStoreManager extends AbstractUserStoreManager {
         throw new UserStoreException("UserStoreManager method not supported : #createRoleContext");
     }
 
-    //Todo: Implement doCheckExistingUser
+    //This method is not implemented since this is required when deleting and adding users. Need to implement
+    //this method when those two method implement
     @Override
     protected boolean doCheckExistingUser(String userName) throws UserStoreException {
         return true;

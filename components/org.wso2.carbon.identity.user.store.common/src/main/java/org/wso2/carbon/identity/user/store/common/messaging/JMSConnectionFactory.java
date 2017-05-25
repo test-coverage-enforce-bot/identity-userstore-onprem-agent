@@ -41,7 +41,7 @@ public class JMSConnectionFactory {
      * @return ActiveMQ Connection factory
      */
     public ActiveMQConnectionFactory createActiveMQConnectionFactory(String messageBrokerURL) {
-        if (null != this.connectionFactory) {
+        if (this.connectionFactory != null) {
             return this.connectionFactory;
         }
         this.connectionFactory = new ActiveMQConnectionFactory(messageBrokerURL);

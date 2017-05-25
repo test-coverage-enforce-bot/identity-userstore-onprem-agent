@@ -17,7 +17,7 @@
  */
 package org.wso2.carbon.identity.user.store.common.messaging;
 
-public class JMSConnectionException extends Exception{
+public class JMSConnectionException extends Exception {
 
     /**
      * Creates a JMS Connector Exception.

@@ -110,7 +110,7 @@ public class AgentConnectionHandler {
         ServerOperation requestOperation = new ServerOperation();
         requestOperation.setTenantDomain(tenantDomain);
         requestOperation.setDomain(domain);
-        requestOperation.setOperationType(operationType); //TODO add an ENUM
+        requestOperation.setOperationType(operationType);
         ObjectMessage requestMessage = requestSession.createObjectMessage();
         requestMessage.setObject(requestOperation);
         requestMessage.setJMSExpiration(UserStoreConstants.QUEUE_SERVER_MESSAGE_LIFETIME);

@@ -183,6 +183,7 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
         Destination requestTopic;
         Destination responseQueue;
         MessageProducer producer;
+
         try {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Sending authentication request to queue for tenant  - [" + this.tenantId + "]");
@@ -834,6 +835,7 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
         Destination responseQueue;
         MessageProducer producer;
         List<String> groupList = new ArrayList<>();
+
         try {
             connectionFactory.createActiveMQConnectionFactory(getMessageBrokerURL());
             connection = connectionFactory.createConnection();

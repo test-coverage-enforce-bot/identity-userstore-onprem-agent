@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  ~ Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+  ~ Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
   ~
   ~ WSO2 Inc. licenses this file to you under the Apache License,
   ~ Version 2.0 (the "License"); you may not use this file except
@@ -128,6 +128,16 @@
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
             <version>${org.json.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.identity.userstore.onprem</groupId>
+            <artifactId>org.wso2.carbon.identity.user.store.common</artifactId>
+            <version>${user.store.common.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.json.wso2</groupId>
+            <artifactId>json</artifactId>
+            <version>${json.wso2.version}</version>
         </dependency>
 
     </dependencies>
@@ -304,6 +314,11 @@
         </um.ws.api.version.range>
 
         <org.json.version>20160810</org.json.version>
+
+        <activemq-core-version.range>[0.0.0, 1.0.0)</activemq-core-version.range>
+
+        <user.store.common.version>1.0.1-SNAPSHOT</user.store.common.version>
+        <user.store.common.version.range>[1.0.0, 2.0.0)</user.store.common.version.range>
 
         <activemq-all-version>5.10.0</activemq-all-version>
         <activemq-core-version>5.7.0</activemq-core-version>

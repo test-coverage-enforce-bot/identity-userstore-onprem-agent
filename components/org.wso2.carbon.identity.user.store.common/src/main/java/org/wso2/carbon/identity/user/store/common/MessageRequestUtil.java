@@ -17,6 +17,9 @@
  */
 package org.wso2.carbon.identity.user.store.common;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.wso2.carbon.identity.user.store.common.model.UserOperation;
 
@@ -25,54 +28,86 @@ import org.wso2.carbon.identity.user.store.common.model.UserOperation;
  */
 public class MessageRequestUtil {
 
+    private static Log LOGGER = LogFactory.getLog(MessageRequestUtil.class);
+
     public static String getAuthenticationRequest(String userName, Object credential) {
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("username", userName);
-        jsonObject.put("password", credential);
+        try {
+            jsonObject.put("username", userName);
+            jsonObject.put("password", credential);
+        } catch (JSONException e) {
+            LOGGER.error("Error occurred while creating authentication request", e);
+        }
         return jsonObject.toString();
     }
 
     public static String getRoleListRequest(String filter, int limit) {
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("filter", filter);
-        jsonObject.put("limit", limit);
+        try {
+            jsonObject.put("filter", filter);
+            jsonObject.put("limit", limit);
+        } catch (JSONException e) {
+            LOGGER.error("Error occurred while creating get role list request", e);
+        }
         return jsonObject.toString();
     }
 
     public static String getUserListRequest(String filter, int limit) {
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("filter", filter);
-        jsonObject.put("limit", limit);
+        try {
+            jsonObject.put("filter", filter);
+            jsonObject.put("limit", limit);
+        } catch (JSONException e) {
+            LOGGER.error("Error occurred while creating get user list request", e);
+        }
         return jsonObject.toString();
     }
 
     public static String getUserPropertyValuesRequestData(String username, String attributes) {
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("username", username);
-        jsonObject.put("attributes", attributes);
+        try {
+            jsonObject.put("username", username);
+            jsonObject.put("attributes", attributes);
+        } catch (JSONException e) {
+            LOGGER.error("Error occurred while creating get user property values request", e);
+        }
         return jsonObject.toString();
     }
 
     public static String doGetExternalRoleListOfUserRequestData(String username) {
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("username", username);
+        try {
+            jsonObject.put("username", username);
+        } catch (JSONException e) {
+            LOGGER.error("Error occurred while creating get external role request", e);
+        }
         return jsonObject.toString();
     }
 
     public static String getUserOperationJSONMessage(UserOperation userOperation) {
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put(UserStoreConstants.UM_JSON_ELEMENT_REQUEST_DATA_CORRELATION_ID, userOperation.getCorrelationId());
-        jsonObject.put(UserStoreConstants.UM_JSON_ELEMENT_REQUEST_DATA_TYPE, userOperation.getRequestType());
-        jsonObject.put(UserStoreConstants.UM_JSON_ELEMENT_REQUEST_DATA, new JSONObject(userOperation.getRequestData()));
+        try {
+            jsonObject.put(UserStoreConstants.UM_JSON_ELEMENT_REQUEST_DATA_CORRELATION_ID,
+                    userOperation.getCorrelationId());
+            jsonObject.put(UserStoreConstants.UM_JSON_ELEMENT_REQUEST_DATA_TYPE, userOperation.getRequestType());
+            jsonObject.put(UserStoreConstants.UM_JSON_ELEMENT_REQUEST_DATA,
+                    new JSONObject(userOperation.getRequestData()));
+        } catch (JSONException e) {
+            LOGGER.error("Error occurred while creating get user operation request", e);
+        }
         return jsonObject.toString();
     }
 
     public static String getUserResponseJSONMessage(String correlationId, String result) {
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put(UserStoreConstants.UM_JSON_ELEMENT_REQUEST_DATA_CORRELATION_ID, correlationId);
-        JSONObject jsonResponse = new JSONObject();
-        jsonResponse.put(UserStoreConstants.UM_JSON_ELEMENT_RESPONSE_DATA_RESULT, result);
-        jsonObject.put(UserStoreConstants.UM_JSON_ELEMENT_RESPONSE_DATA, jsonResponse);
+        try {
+            jsonObject.put(UserStoreConstants.UM_JSON_ELEMENT_REQUEST_DATA_CORRELATION_ID, correlationId);
+            JSONObject jsonResponse = new JSONObject();
+            jsonResponse.put(UserStoreConstants.UM_JSON_ELEMENT_RESPONSE_DATA_RESULT, result);
+            jsonObject.put(UserStoreConstants.UM_JSON_ELEMENT_RESPONSE_DATA, jsonResponse);
+        } catch (JSONException e) {
+            LOGGER.error("Error occurred while creating get user response message", e);
+        }
         return jsonObject.toString();
     }
 }

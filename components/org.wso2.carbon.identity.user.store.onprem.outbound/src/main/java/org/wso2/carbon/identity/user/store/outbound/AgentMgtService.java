@@ -36,7 +36,7 @@ public class AgentMgtService extends AbstractAdmin {
 
     private static Log LOGGER = LogFactory.getLog(AgentMgtService.class);
 
-    private final static String AGENT_STATIC_FILES_PATH = "/repository/resources/agent/static";
+    private final static String AGENT_STATIC_FILES_PATH = "/repository/resources/agent";
     private final static String AGENT_FILE_NAME = "wso2agent.zip";
 
     /**

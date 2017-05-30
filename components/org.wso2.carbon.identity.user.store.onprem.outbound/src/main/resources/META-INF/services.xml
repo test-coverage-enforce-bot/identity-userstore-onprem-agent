@@ -17,7 +17,7 @@
   -->
 <serviceGroup>
 
-    <service name="CloudDirectoryAdminService" scope="transportsession">
+    <service name="TokenMgtAdminService" scope="transportsession">
         <transports>
             <transport>https</transport>
         </transports>
@@ -25,10 +25,25 @@
         <description>
             To administer Configuration related functionality.
         </description>
-        <parameter name="ServiceClass">org.wso2.carbon.identity.user.store.ws.CloudDirectoryAdminService</parameter>
+        <parameter name="ServiceClass">org.wso2.carbon.identity.user.store.outbound.TokenMgtService</parameter>
         <parameter name="adminService" locked="true">true</parameter>
         <parameter name="AuthorizationAction" locked="true">/permission/admin/login</parameter>
     </service>
+
+    <service name="AgentMgtService" scope="transportsession">
+        <transports>
+            <transport>https</transport>
+        </transports>
+        <schema schemaNamespace="http://org.apache.axis2/xsd" elementFormDefaultQualified="true"/>
+        <description>
+            To administer Configuration related functionality.
+        </description>
+        <parameter name="ServiceClass">org.wso2.carbon.identity.user.store.outbound.AgentMgtService</parameter>
+        <parameter name="adminService" locked="true">true</parameter>
+        <parameter name="AuthorizationAction" locked="true">/permission/admin/login</parameter>
+    </service>
+
     <parameter name="hiddenService" locked="true">true</parameter>
+
 
 </serviceGroup>

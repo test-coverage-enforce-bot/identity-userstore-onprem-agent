@@ -50,7 +50,6 @@ public class FileUtil {
     public final static String AGENT_FILE_NAME = "wso2agent.zip";
     public final static String PUBLIC_KEY_NAME = "public.cert";
 
-
     /**
      * Get directory name with timestamp
      *
@@ -92,7 +91,7 @@ public class FileUtil {
      * @param publicKeyPath
      * @throws Exception
      */
-    public void copyPublicKey(String publicKeyPath) throws Exception{
+    public void copyPublicKey(String publicKeyPath) throws Exception {
         int tenantID = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantId();
         String tenantDomain = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantDomain();
         KeyStoreManager keyStoreManager = KeyStoreManager.getInstance(tenantID);
@@ -101,27 +100,30 @@ public class FileUtil {
         PublicKey publicKey;
 
         try {
-            File file =  new File(publicKeyPath);
-            FileOutputStream fos =  new FileOutputStream(file);
-            dos =  new DataOutputStream(fos);
+            File file = new File(publicKeyPath);
+            FileOutputStream fos = new FileOutputStream(file);
+            dos = new DataOutputStream(fos);
 
-            if(tenantID != MultitenantConstants.SUPER_TENANT_ID) {
+            if (tenantID != MultitenantConstants.SUPER_TENANT_ID) {
                 keyStore = keyStoreManager.getKeyStore(generateKSNameFromDomainName(tenantDomain));
-                Certificate publicCert = keyStore.getCertificate(tenantDomain); //Default keystore alias = tenantDomain name
+                Certificate publicCert = keyStore
+                        .getCertificate(tenantDomain); //Default keystore alias = tenantDomain name
                 publicKey = publicCert.getPublicKey();
             } else {
                 publicKey = keyStoreManager.getDefaultPublicKey();
 
             }
 
-            byte []keyBytes = publicKey.getEncoded();
-            BASE64Encoder encoder= new BASE64Encoder();
+            byte[] keyBytes = publicKey.getEncoded();
+            BASE64Encoder encoder = new BASE64Encoder();
             String encoded = encoder.encodeBuffer(keyBytes);
             dos.writeBytes(encoded);
             dos.flush();
-        } finally{
+        } finally {
             try {
-                dos.close();
+                if (dos != null) {
+                    dos.close();
+                }
             } catch (IOException e) {
                 log.error("Error occurred while closing data stream", e);
             }
@@ -167,10 +169,15 @@ public class FileUtil {
             } else {
                 byte[] buf = new byte[1024];
                 int len;
-                FileInputStream in = new FileInputStream(srcFile);
-                zip.putNextEntry(new ZipEntry(path + "/" + folder.getName()));
-                while ((len = in.read(buf)) > 0) {
-                    zip.write(buf, 0, len);
+                FileInputStream in = null;
+                try {
+                    in = new FileInputStream(srcFile);
+                    zip.putNextEntry(new ZipEntry(path + "/" + folder.getName()));
+                    while ((len = in.read(buf)) > 0) {
+                        zip.write(buf, 0, len);
+                    }
+                } finally {
+                    in.close();
                 }
             }
         }
@@ -186,19 +193,19 @@ public class FileUtil {
     private void addFolderToZip(String path, String srcFolder, ZipOutputStream zip) throws IOException {
         File folder = new File(srcFolder);
 
-        if (folder.list().length == 0) {
-            addFileToZip(path, srcFolder, zip, true);
-        } else {
-            for (String fileName : folder.list()) {
-                if (path.equals("")) {
-                    addFileToZip(folder.getName(), srcFolder + "/" + fileName, zip, false);
-                } else {
-                    addFileToZip(path + "/" + folder.getName(), srcFolder + "/" + fileName, zip, false);
+        if (folder != null && folder.list() != null) {
+            if (folder.list().length == 0) {
+                addFileToZip(path, srcFolder, zip, true);
+            } else {
+                for (String fileName : folder.list()) {
+                    if (path.equals("")) {
+                        addFileToZip(folder.getName(), srcFolder + "/" + fileName, zip, false);
+                    } else {
+                        addFileToZip(path + "/" + folder.getName(), srcFolder + "/" + fileName, zip, false);
+                    }
                 }
             }
         }
     }
-
-
 
 }

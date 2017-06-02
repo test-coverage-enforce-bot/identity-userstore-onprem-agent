@@ -127,7 +127,7 @@
         <dependency>
             <groupId>org.wso2.carbon.identity.userstore.onprem</groupId>
             <artifactId>org.wso2.carbon.identity.user.store.common</artifactId>
-            <version>${user.store.common.version}</version>
+            <version>${identity.userstore.onprem.agent.version}</version>
         </dependency>
         <dependency>
             <groupId>org.json.wso2</groupId>
@@ -293,6 +293,9 @@
     </build>
 
     <properties>
+        <identity.userstore.onprem.agent.version>2.0.0-SNAPSHOT</identity.userstore.onprem.agent.version>
+        <identity.userstore.onprem.agent.version.range>[2.0.0, 3.0.0)</identity.userstore.onprem.agent.version.range>
+
         <!-- Carbon kernel version -->
         <carbon.kernel.version>4.4.7</carbon.kernel.version>
         <carbon.kernel.imp.pkg.version.range>[4.4.0, 5.0.0)</carbon.kernel.imp.pkg.version.range>
@@ -310,8 +313,6 @@
         <um.ws.api.version.range>[5.0.0, 6.0.0)
         </um.ws.api.version.range>
 
-        <user.store.common.version>${project.version}</user.store.common.version>
-        <user.store.common.version.range>[2.0.0, 3.0.0)</user.store.common.version.range>
 
         <org.json.version>20160810</org.json.version>
 

@@ -454,8 +454,8 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
             mapAttributes.put(propertyName, allUserAttributes.get(propertyName));
         }
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(
-                    "Get user properties completed. User: " + userName + " attributes: " + mapAttributes.toString());
+            LOGGER.debug("Get user properties completed. User: " + userName + " attributes: " +
+                    mapAttributes.toString());
         }
         return mapAttributes;
     }

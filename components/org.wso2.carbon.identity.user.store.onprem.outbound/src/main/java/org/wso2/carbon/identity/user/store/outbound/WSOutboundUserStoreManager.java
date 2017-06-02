@@ -363,6 +363,10 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
     public Map<String, String> getUserPropertyValues(String userName, String[] propertyNames, String profileName)
             throws UserStoreException {
 
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Sending get user properties of user: " + userName + " for tenant  - [" + this.tenantId + "]");
+        }
+
         UserAttributeCacheEntry cacheEntry = getUserAttributesFromCache(userName);
         Map<String, String> allUserAttributes = new HashMap<>();
         Map<String, String> mapAttributes = new HashMap<>();
@@ -448,6 +452,10 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
         }
         for (String propertyName : propertyNames) {
             mapAttributes.put(propertyName, allUserAttributes.get(propertyName));
+        }
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Get user properties completed. User: " + userName + " attributes: " +
+                    mapAttributes.toString());
         }
         return mapAttributes;
     }
@@ -780,6 +788,9 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
 
                 retryCount++;
             }
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Role list of user: " + userName + " is : " + groupList.toString());
+            }
 
         } catch (JMSConnectionException e) {
             LOGGER.error("Error occurred while creating JMS Connection", e);
@@ -885,6 +896,9 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
                     }
                 }
                 retryCount++;
+            }
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Role name list is: " + groupList.toString());
             }
 
         } catch (JMSConnectionException e) {

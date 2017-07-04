@@ -353,9 +353,10 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
     private String getAllClaimMapAttributes(ClaimMapping[] claimMappings) {
 
         StringBuilder queryBuilder = new StringBuilder();
+        String myDomainName = getMyDomainName();
 
         for (ClaimMapping mapping : claimMappings) {
-            queryBuilder.append(",").append(mapping.getMappedAttribute());
+            queryBuilder.append(",").append(mapping.getMappedAttribute(myDomainName));
         }
         return queryBuilder.toString().replaceFirst(",", "");
     }

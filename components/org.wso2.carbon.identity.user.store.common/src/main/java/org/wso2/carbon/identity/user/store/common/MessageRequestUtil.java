@@ -67,7 +67,7 @@ public class MessageRequestUtil {
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("username", username);
-            jsonObject.put("attributes", attributes);
+            jsonObject.put("claims", attributes);
         } catch (JSONException e) {
             LOGGER.error("Error occurred while creating get user property values request", e);
         }

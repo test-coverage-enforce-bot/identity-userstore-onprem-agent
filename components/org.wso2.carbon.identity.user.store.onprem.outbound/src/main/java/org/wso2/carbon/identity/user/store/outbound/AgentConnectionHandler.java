@@ -116,6 +116,9 @@ public class AgentConnectionHandler {
         requestMessage.setJMSExpiration(UserStoreConstants.QUEUE_SERVER_MESSAGE_LIFETIME);
 
         requestMessage.setJMSReplyTo(responseQueue);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Sending server operation : " + operationType + " with  tenant domain : " + tenantDomain);
+        }
         producer.send(requestMessage);
     }
 }

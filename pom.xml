@@ -28,7 +28,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.wso2.carbon.identity.userstore.onprem</groupId>
     <artifactId>identity-userstore-onprem</artifactId>
-    <version>3.0.1-SNAPSHOT</version>
+    <version>3.0.1</version>
     <packaging>pom</packaging>
     <name>WSO2 Carbon OnPrem Userstore Module</name>
     <description>
@@ -40,7 +40,7 @@
         <url>https://github.com/wso2-extensions/identity-userstore-onprem-agent.git</url>
         <developerConnection>scm:git:https://github.com/wso2-extensions/identity-userstore-onprem-agent.git</developerConnection>
         <connection>scm:git:https://github.com/wso2-extensions/identity-userstore-onprem-agent.git</connection>
-        <tag>HEAD</tag>
+        <tag>v3.0.1</tag>
     </scm>
 
 
@@ -293,7 +293,7 @@
     </build>
 
     <properties>
-        <identity.userstore.onprem.agent.version>3.0.1-SNAPSHOT</identity.userstore.onprem.agent.version>
+        <identity.userstore.onprem.agent.version>3.0.1</identity.userstore.onprem.agent.version>
         <identity.userstore.onprem.agent.version.range>[2.0.0, 3.0.0)</identity.userstore.onprem.agent.version.range>
 
         <!-- Carbon kernel version -->

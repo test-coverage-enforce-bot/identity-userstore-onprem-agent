@@ -218,6 +218,11 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
                 MessageConsumer consumer = responseSession.createConsumer(responseQueue, filter);
                 responseMessage = consumer.receive(getMessageConsumeTimeout());
                 retryCount++;
+                if (LOGGER.isDebugEnabled() && responseMessage != null) {
+                    LOGGER.debug("Received response for user operation : " + UserStoreConstants
+                            .UM_OPERATION_TYPE_AUTHENTICATE + " correlationId : " + correlationId + " tenant id " +
+                            ": " + tenantId);
+                }
             }
 
             if (responseMessage != null) {
@@ -279,6 +284,12 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
         requestMessage.setJMSCorrelationID(correlationId);
         requestMessage.setJMSExpiration(getMessageLifeTime());
         requestMessage.setJMSReplyTo(responseQueue);
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Sending user operation : " + operationType + " with correlationId : " + correlationId +
+                    " tenant domain : " + tenantDomain);
+        }
+
         producer.send(requestMessage);
     }
 
@@ -411,9 +422,14 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
                     String filter = String.format(JMS_CORRELATIONID_FILTER, correlationId);
                     MessageConsumer consumer = responseSession.createConsumer(responseQueue, filter);
                     responseMessage = consumer.receive(getMessageConsumeTimeout());
-                    UserOperation response = (UserOperation) ((ObjectMessage) responseMessage).getObject();
 
-                    if(response != null) {
+                    if(responseMessage != null) {
+                        if (LOGGER.isDebugEnabled()) {
+                            LOGGER.debug("Received response for user operation : " + UserStoreConstants
+                                    .UM_OPERATION_TYPE_GET_CLAIMS + " correlationId : " + correlationId + " tenant id" +
+                                    " : " + tenantId);
+                        }
+                        UserOperation response = (UserOperation) ((ObjectMessage) responseMessage).getObject();
                         JSONObject responseObj = new JSONObject(response.getResponseData());
                         JSONObject resultObj = new JSONObject(
                                 responseObj.get(UserStoreConstants.UM_JSON_ELEMENT_RESPONSE_DATA_RESULT).toString());
@@ -669,6 +685,11 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
                 String selector = String.format(JMS_CORRELATIONID_FILTER, correlationId);
                 MessageConsumer consumer = responseSession.createConsumer(responseQueue, selector);
                 responseMessage = consumer.receive(getMessageConsumeTimeout());
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Received response for user operation : " + UserStoreConstants
+                            .UM_OPERATION_TYPE_GET_USER_LIST + " correlationId : " + correlationId + " tenant id " +
+                            ": " + tenantId);
+                }
                 if(responseMessage != null) {
                     UserOperation response = (UserOperation) ((ObjectMessage) responseMessage).getObject();
                     JSONObject responseObj = new JSONObject(response.getResponseData());
@@ -770,6 +791,11 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
                 String selector = String.format(JMS_CORRELATIONID_FILTER, correlationId);
                 MessageConsumer consumer = responseSession.createConsumer(responseQueue, selector);
                 responseMessage = consumer.receive(getMessageConsumeTimeout());
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Received response for user operation : " + UserStoreConstants
+                            .UM_OPERATION_TYPE_GET_USER_ROLES + " correlationId : " + correlationId + " tenant id " +
+                            ": " + tenantId);
+                }
 
                 if(responseMessage != null) {
                     UserOperation response = (UserOperation) ((ObjectMessage) responseMessage).getObject();
@@ -878,6 +904,11 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
                 MessageConsumer consumer = responseSession.createConsumer(responseQueue, selector);
                 responseMessage = consumer.receive(getMessageConsumeTimeout());
                 if(responseMessage != null) {
+                    if (LOGGER.isDebugEnabled()) {
+                        LOGGER.debug("Received response for user operation : " + UserStoreConstants
+                                .UM_OPERATION_TYPE_GET_ROLES + " correlationId : " + correlationId + " tenant id " +
+                                ": " + tenantId);
+                    }
                     UserOperation response = (UserOperation) ((ObjectMessage) responseMessage).getObject();
                     JSONObject responseObj = new JSONObject(response.getResponseData());
                     JSONObject resultObj = new JSONObject(

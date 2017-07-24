@@ -66,14 +66,6 @@ public class JMSConnectionFactory {
             return connection;
 
         } catch (JMSException e) {
-            // Need to close the connection in the case if durable subscriptions
-            try {
-                if (connection != null) {
-                    connection.close();
-                }
-            } catch (Exception ex) {
-                LOGGER.error("Error while closing the connection", ex);
-            }
             throw new JMSConnectionException("Error occurred while creating queue connection", e);
         }
     }

@@ -22,6 +22,7 @@ import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.wso2.carbon.identity.user.store.common.model.UserOperation;
+import org.wso2.carbon.utils.Secret;
 
 /**
  * Message request utility to create user operation message which send to queue
@@ -34,7 +35,11 @@ public class MessageRequestUtil {
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("username", userName);
-            jsonObject.put("password", credential);
+            if (credential instanceof Secret) {
+                jsonObject.put("password", String.valueOf(((Secret) credential).getChars()));
+            } else {
+                jsonObject.put("password", credential);
+            }
         } catch (JSONException e) {
             LOGGER.error("Error occurred while creating authentication request", e);
         }

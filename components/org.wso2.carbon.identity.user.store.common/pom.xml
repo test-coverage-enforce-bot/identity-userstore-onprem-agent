@@ -43,6 +43,12 @@
             <artifactId>json</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.wso2.carbon</groupId>
+            <artifactId>org.wso2.carbon.utils</artifactId>
+            <version>4.4.16</version>
+        </dependency>
+
     </dependencies>
 
     <build>

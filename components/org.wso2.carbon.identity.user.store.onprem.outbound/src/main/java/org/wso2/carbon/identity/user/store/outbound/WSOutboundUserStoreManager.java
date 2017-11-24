@@ -531,7 +531,7 @@ public class WSOutboundUserStoreManager extends AbstractUserStoreManager {
     }
 
     public Date getPasswordExpirationTime(String userName) throws UserStoreException {
-        throw new UserStoreException("UserStoreManager method not supported : #getPasswordExpirationTime");
+        return super.getPasswordExpirationTime(userName);
     }
 
     @Override

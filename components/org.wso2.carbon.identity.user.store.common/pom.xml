@@ -43,6 +43,11 @@
             <artifactId>json</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.wso2.carbon</groupId>
+            <artifactId>org.wso2.carbon.utils</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -63,6 +68,7 @@
                         <Import-Package>
                             org.apache.activemq.*;version="${activemq-core-version.range}",
                             org.json.*;version="${json.wso2.version.range}",
+                            org.wso2.carbon.utils.*;version="${carbon.utils.version.range}"
                         </Import-Package>
                         <Export-Package>
                             org.wso2.carbon.identity.user.store.common.*;

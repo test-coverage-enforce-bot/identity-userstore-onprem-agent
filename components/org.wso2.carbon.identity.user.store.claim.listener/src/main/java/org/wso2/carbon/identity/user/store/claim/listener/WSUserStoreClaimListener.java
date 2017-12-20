@@ -46,29 +46,31 @@ public class WSUserStoreClaimListener extends AbstractClaimManagerListener {
     public boolean getAttributeName(String domainName, String claimURI)
             throws org.wso2.carbon.user.core.UserStoreException {
         try {
-            tenantId = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantId();
-            Tenant tenant = WSUserStoreClaimListenerComponentHolder.getInstance().getRealmService()
-                    .getTenantManager().getTenant(tenantId);
-            if (tenant != null) {
-                tenantDomain = WSUserStoreClaimListenerComponentHolder.getInstance().getRealmService()
-                        .getTenantManager().getTenant(tenantId).getDomain();
-                TenantDomainClaimCacheEntry cacheEntry = getTenantDomainReferenceFromCache(
-                        getTenantDomainCacheKey(domainName, tenantDomain));
-                if (cacheEntry == null) {
-                    secondaryUserStoreManager = ((UserStoreManager) (WSUserStoreClaimListenerComponentHolder
-                            .getInstance()
-                            .getRealmService().getTenantUserRealm(tenantId).getUserStoreManager()))
-                            .getSecondaryUserStoreManager(domainName);
+            if ("IS-WSO2.COM".equalsIgnoreCase(domainName)) {
+                tenantId = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantId();
+                Tenant tenant = WSUserStoreClaimListenerComponentHolder.getInstance().getRealmService()
+                        .getTenantManager().getTenant(tenantId);
+                if (tenant != null) {
+                    tenantDomain = WSUserStoreClaimListenerComponentHolder.getInstance().getRealmService()
+                            .getTenantManager().getTenant(tenantId).getDomain();
+                    TenantDomainClaimCacheEntry cacheEntry = getTenantDomainReferenceFromCache(
+                            getTenantDomainCacheKey(domainName, tenantDomain));
+                    if (cacheEntry == null) {
+                        secondaryUserStoreManager = ((UserStoreManager) (WSUserStoreClaimListenerComponentHolder
+                                .getInstance()
+                                .getRealmService().getTenantUserRealm(tenantId).getUserStoreManager()))
+                                .getSecondaryUserStoreManager(domainName);
 
-                    if (secondaryUserStoreManager != null) {
-                        claimManager = secondaryUserStoreManager.getClaimManager();
-                        ClaimMapping[] claimMappings = claimManager.getAllClaimMappings();
+                        if (secondaryUserStoreManager != null) {
+                            claimManager = secondaryUserStoreManager.getClaimManager();
+                            ClaimMapping[] claimMappings = claimManager.getAllClaimMappings();
 
-                        String cacheKey = getTenantDomainCacheKey(domainName, tenantDomain);
-                        addTenantDomainClaimToCache(cacheKey, claimURI);
-                        for (ClaimMapping claimMapping : claimMappings) {
-                            String uri = claimMapping.getClaim().getClaimUri();
-                            updateClaimMapping(domainName, claimMapping, uri);
+                            String cacheKey = getTenantDomainCacheKey(domainName, tenantDomain);
+                            addTenantDomainClaimToCache(cacheKey, claimURI);
+                            for (ClaimMapping claimMapping : claimMappings) {
+                                String uri = claimMapping.getClaim().getClaimUri();
+                                updateClaimMapping(domainName, claimMapping, uri);
+                            }
                         }
                     }
                 }
